@@ -24,6 +24,6 @@
 
 ---
 
-## Licence
+## License
 
 Licensed by [MIT License](LICENSE).
