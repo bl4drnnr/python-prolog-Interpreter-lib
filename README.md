@@ -1,1 +1,1 @@
-# python-prolog-interpreter-cli
+# python-prolog-interpreter-lib
