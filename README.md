@@ -25,3 +25,5 @@
 ---
 
 ## Licence
+
+Licensed by [MIT License](LICENSE).
