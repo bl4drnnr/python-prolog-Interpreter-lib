@@ -4,7 +4,9 @@
 2. [Installation](#installation)
 3. [Documentation](#documentation)
 4. [References and contact](#references-and-contact)
-5. [Licence](#licence)
+5. [Licence](#license)
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
 ---
 
