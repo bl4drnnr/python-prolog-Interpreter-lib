@@ -52,8 +52,6 @@ def child_to_parent(child, Q):
 
 def prob_calc(currentgoal, rl, Q):
     key, value = prob_parser(currentgoal.domain, rl.to_string(), rl.terms)
-    print('key', key)
-    print('value', value)
     value = eval(value)
     if value:
         value = currentgoal.domain.get(key)

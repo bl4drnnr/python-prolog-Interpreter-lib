@@ -18,19 +18,22 @@ class Fact:
 
         if ":-" in fact:
             [fact_left_side, fact_right_side] = fact.split(":-")
-            # if_ind = fact.index(":-")
-            # self.left_side = Expression(fact[:if_ind])
-            #
-            # replacements = {"),": ")AND", ");": ")OR"}
-            # replacements = dict((re.escape(k), v) for k, v in replacements.items())
-            # pattern = re.compile("|".join(replacements.keys()))
-            #
-            # rh = pattern.sub(lambda x: replacements[re.escape(x.group(0))], fact[if_ind + 2:])
-            # rh = re.split("AND|OR", rh)
-            #
-            # self.right_side = [Expression(g) for g in rh]
-            # rs = [i.to_string() for i in self.right_side]
-            # self.fact = (self.left_side.to_string() + ":-" + ",".join(rs))
+            self.left_side = Expression(fact_left_side)
+
+            right_side = []
+            split_right_side = fact_right_side.split("),")
+
+            for i in split_right_side:
+                if '(' in i and ')' not in i:
+                    i += ')'
+                elif ',' in i and '(' not in i and ')' not in i:
+                    right_side += i.split(',')
+                    continue
+                right_side.append(i)
+
+            self.right_side = [Expression(g) for g in right_side]
+            rs = [i.to_string() for i in self.right_side]
+            self.fact = (self.left_side.to_string() + ":-" + ",".join(rs))
         else:
             self.left_side = Expression(fact)
             self.right_side = []
