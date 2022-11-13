@@ -1,10 +1,14 @@
 # Table of Contents
 
 1. [Python PROLOG Interpreter Library](#python-prolog-interpreter-library)
-2. [Installation](#installation)
+2. [Installation and usage](#installation-and-example-of-usage)
+   1. [Installation](#installation)
+   2. [Example of usage](#example-of-usage)
 3. [Documentation](#documentation)
-   1. [Data types](#data-types)
-   2. [Rules and facts](#rules-and-facts)
+   1. [Introduction to Prolog](#introduction-to-prolog)
+      1. [Data types](#data-types)
+      2. [Rules and facts](#rules-and-facts)
+   2. [Usage](#usage)
 4. [References and contact](#references-and-contact)
 5. [Licence](#license)
 
@@ -26,11 +30,57 @@ Right now, you are reading about `Python` library, if you want to find out more 
 
 ---
 
-## Installation
+## Installation and example of usage
+
+### Installation
+
+In order to install library, open up terminal in project folder and type:
+
+```
+pip install ppil
+```
+
+### Example of usage
+
+Here is example of usage and, at the same time, the way how you can test the program:
+
+```python
+import ppil
+
+ancestors_payload = [
+    "person(michael, john, ann, m, 19)",
+    "person(john, jeff, jenny, m, 56)",
+    "person(ann, andrew, ewa, f, 45)",
+    "person(jordan, andrew, ewa, m, 48)",
+    "person(andrew, person1, person2, m, 82)",
+    "person(ewa, person3, person4, f, 75)",
+    "person(jeff, person5, person6, m, 81)",
+    "person(jenny, person7, person8, f, 77)",
+    "mom(X, Y) : -person(X, _, _, _, E), person(Y, _, W, _, L), W = X, M1 is L + 14, E >= M1",
+    "father(X, Y) :- person(X, _, _, _, E), person(Y, W, _, _, L), W = X, M1 is L + 14, E >= M1",
+    "brother(X, Y) :- person(X,B,C,D,_), person(Y,P,M,_,_), B = P, C = M, D = m, X \= Y",
+    "sister(X, Y) :- person(X, Q, W, E, _), person(Y, A, B, _, _), Q = A, W = B, E = f, X \= Y",
+    "grandmother(X, Y) :- (((mom(A, Y), mom(X, B)); (mom(X, A), father(B, Y))), A = B)",
+    "grandad(X, Y) :- (((father(A, Y), father(X, B)); (father(X, A), mom(B, Y))), A = B)"
+]
+
+ancestors_db = ppil.KnowledgeDatabase("my db")
+ancestors_db(ancestors_payload)
+
+assert ancestors_db.query(ppil.Expression("person(michael, john, ann, m, 19)")) == ["Yes"]
+
+answer = {"What": "michael"}
+query = ancestors_db.query(ppil.Expression("mom(ann, What)"))
+assert answer in query
+```
+
+More about how it works, you can find below, in [Documentation](#documentation) section.
 
 ---
 
 ## Documentation
+
+### Introduction to Prolog
 
 A little introduction to **_Prolog_**.
 
@@ -40,7 +90,7 @@ If the negated query can be refuted, i.e., an instantiation for all free variabl
 This makes Prolog (and other logic programming languages) particularly useful for database, symbolic mathematics, and language parsing applications. Because Prolog allows impure predicates, checking the truth value of certain special predicates may have some deliberate side effect, such as printing a value to the screen. 
 Because of this, the programmer is permitted to use some amount of conventional imperative programming when the logical paradigm is inconvenient. It has a purely logical subset, called "pure Prolog", as well as a number of extralogical features.
 
-### Data types
+#### Data types
 
 Prolog's single data type is the term. Terms are either atoms, numbers, variables or compound terms.
 
@@ -54,7 +104,7 @@ Special cases of compound terms:
 - A _List_ is an ordered collection of terms. It is denoted by square brackets with the terms separated by commas, or in the case of the empty list, by `[]`. For example, `[1,2,3]` or `[red,green,blue]`.
 - _Strings_: A sequence of characters surrounded by quotes is equivalent to either a list of (numeric) character codes, a list of characters (atoms of length 1), or an atom depending on the value of the Prolog flag `double_quotes`. For example, `to be, or not to be`.
 
-### Rules and facts
+#### Rules and facts
 
 Prolog programs describe relations, defined by means of clauses. Pure Prolog is restricted to **_Horn clauses_**. There are two types of clauses: facts and rules. A rule is of the form
 
@@ -115,6 +165,38 @@ parts (`append(X, Y, List)`, given a list `List`). For this reason, a comparativ
 
 As a general purpose language, Prolog also provides various built-in predicates to perform routine activities like input/output, using graphics and otherwise communicating with the operating system. 
 These predicates are not given a relational meaning and are only useful for the side-effects they exhibit on the system. For example, the predicate `write/1` displays a term on the screen.
+
+### Usage
+
+To start use Prolog, first of all, you need to import it in your code:
+
+```python
+import ppil
+```
+
+Then, using library, create object of `KnowledgeDatabase` and pass a payload to it.
+**_Remember, you also need to provide a name of your knowledge database_**:
+
+```python
+import ppil
+
+database_payload = [
+    "person(michael, john, ann, m, 19)"
+]
+
+database = ppil.KnowledgeDatabase("My database")
+database(database_payload)
+```
+
+Now, you are free to go, you `.query` and `.Expression` methods in order to manipulate your database:
+
+```python
+assert database.query(ppil.Expression("person(michael, john, ann, m, 19)")) == ["Yes"]
+
+answer = {"What": "michael"}
+query = database.query(ppil.Expression("mom(ann, What)"))
+assert answer in query
+```
 
 ---
 
