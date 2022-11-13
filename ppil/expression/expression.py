@@ -8,7 +8,7 @@ class Expression:
     def _parse_expression(self, fact):
         fact = fact.replace(" ", "")
         self.f = fact
-        splitting = r"is|\*|\+|\-|\/|>=|<=|>|<|and|or|in|not"
+        splitting = r"=|is|\*|\+|\-|\/|>=|<=|>|<|and|or|in|not"
 
         if "(" not in fact:
             fact = "(" + fact + ")"

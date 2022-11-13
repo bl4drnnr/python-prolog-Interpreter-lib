@@ -22,11 +22,12 @@ def main():
     ancestors_db = ppil.KnowledgeDatabase("my db")
     ancestors_db(db_playload1)
 
-    assert ancestors_db.query(ppil.Expression("osoba(michal, aleh, larysa, m, 19)")) == ["Yes"]
+    # assert ancestors_db.query(ppil.Expression("osoba(michal, aleh, larysa, m, 19)")) == ["Yes"]
 
     # answer = {"What": "michal"}
     query = ancestors_db.query(ppil.Expression("matka(larysa, What)"))
-    print('query', query)
+    for i in query:
+        print(i)
     # assert answer in query
 
 

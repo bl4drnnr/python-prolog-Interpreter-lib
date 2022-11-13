@@ -12,20 +12,22 @@ class KnowledgeDatabase(object):
     def init_knowledge_database(self, database):
         for i in database:
             i = Fact(i)
-            g = [Goal(Fact(r.to_string())) for r in i.right_side]
+
+            g = []
+            for r in i.right_side:
+                goal = Goal(Fact(r.to_string()))
+                g.append(goal)
 
             if i.left_side.predicate in self.db:
-                self.db[i.left_side.predicate]["facts"].push(i)
-                self.db[i.left_side.predicate]["terms"].push(i.terms)
-                self.db[i.left_side.predicate]["goals"].push(g)
+                self.db[i.left_side.predicate]["facts"].append(i)
+                self.db[i.left_side.predicate]["terms"].append(i.terms)
+                self.db[i.left_side.predicate]["goals"].append(g)
             else:
-                self.db[i.left_side.predicate] = {}
-                self.db[i.left_side.predicate]["facts"] = FactHeap()
-                self.db[i.left_side.predicate]["facts"].push(i)
-                self.db[i.left_side.predicate]["goals"] = FactHeap()
-                self.db[i.left_side.predicate]["goals"].push(g)
-                self.db[i.left_side.predicate]["terms"] = FactHeap()
-                self.db[i.left_side.predicate]["terms"].push(i.terms)
+                self.db[i.left_side.predicate] = {
+                    "facts": [i],
+                    "goals": [g],
+                    "terms": [i.terms]
+                }
 
     def __call__(self, args):
         self.init_knowledge_database(args)
