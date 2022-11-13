@@ -15,5 +15,5 @@ class Goal:
         return "Goal = %s, parent = %s" % (self.fact, self.parent)
         
     def __lt__(self, other):
-        return self.fact.lh.terms[self.fact.lh.index] < other.fact.lh.terms[other.fact.lh.index]
+        return self.fact.left_side.terms[self.fact.left_side.index] < other.fact.left_side.terms[other.fact.left_side.index]
         

@@ -11,7 +11,7 @@ def main():
         "osoba(ola, person3, person4, f, 75)",
         "osoba(wlodzimierz, person5, person6, m, 81)",
         "osoba(ania, person7, person8, f, 77)",
-        "matka(X, Y) :- osoba(X, _, _, _, _), osoba(Y, _, W, _, L), W = X",
+        # "matka(X, Y) :- osoba(X, A, B, C, D), osoba(Y, E, W, F, L), W = X",
         # "ojciec(X, Y):-osoba(X, _, _, _, E), osoba(Y, W, _, _, L), W = X, M1 is L + 14, E >= M1",
         # "brat(X, Y):-osoba(X,B,C,D,_), osoba(Y,P,M,_,_), B=P, C=M, D = m, X\=Y",
         # "siostra(X, Y):-osoba(X,Q,W,E,_), osoba(Y,A,B,_,_), Q=A, W=B, E = f, X\=Y",
@@ -25,8 +25,8 @@ def main():
     assert ancestors_db.query(ppil.Expression("osoba(michal, aleh, larysa, m, 19)")) == ["Yes"]
 
     # answer = {"What": "michal"}
-    # query = ancestors_db.query(ppil.Expression("matka(larysa, What)"))
-    # print('query', query)
+    query = ancestors_db.query(ppil.Expression("matka(larysa, What)"))
+    print('query', query)
     # assert answer in query
 
 

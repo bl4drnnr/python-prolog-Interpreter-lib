@@ -6,10 +6,10 @@ from ppil.prolog_elements.fact import Fact
 
 def parent_inherits(rl, rulef, currentgoal, Q):
     for f in range(len(rulef)):
-        if len(rl.terms) != len(rulef[f].lh.terms):
+        if len(rl.terms) != len(rulef[f].left_side.terms):
             continue
         father = Goal(rulef[f], currentgoal)
-        uni = unify(rulef[f].lh, rl,
+        uni = unify(rulef[f].left_side, rl,
                     father.domain,
                     currentgoal.domain)
         if uni:
@@ -19,21 +19,21 @@ def parent_inherits(rl, rulef, currentgoal, Q):
 def child_assigned(rl, rulef, currentgoal, Q):
     if len(currentgoal.domain) == 0 or all(i not in currentgoal.domain for i in rl.terms):
         for f in range(len(rulef)):
-            if len(rl.terms) != len(rulef[f].lh.terms):
+            if len(rl.terms) != len(rulef[f].left_side.terms):
                 continue
             child = Goal(rulef[f], currentgoal)
             Q.push(child)
     else:
         key = currentgoal.domain.get(rl.terms[rl.index])
-        if not key or rulef[0].rhs:
+        if not key or rulef[0].right_side:
             first, last = (0, len(rulef))
         else:
             first, last = fact_binary_search(rulef, key)
         for f in range(first, last):
-            if len(rl.terms) != len(rulef[f].lh.terms):
+            if len(rl.terms) != len(rulef[f].left_side.terms):
                 continue
             child = Goal(rulef[f], currentgoal)
-            uni = unify(rulef[f].lh, rl,
+            uni = unify(rulef[f].left_side, rl,
                         child.domain,
                         currentgoal.domain)
             if uni:
@@ -42,8 +42,8 @@ def child_assigned(rl, rulef, currentgoal, Q):
 
 def child_to_parent(child, Q):
     parent = child.parent.__copy__()
-    unify(parent.fact.rhs[parent.ind],
-          child.fact.lh,
+    unify(parent.fact.right_side[parent.ind],
+          child.fact.left_side,
           parent.domain,
           child.domain)
     parent.ind += 1
@@ -74,7 +74,7 @@ def fact_binary_search(facts, key):
     while right < length:
         middle = (right + length) // 2
         f = facts[middle]
-        if key < f.lh.terms[f.lh.index]:
+        if key < f.left_side.terms[f.left_side.index]:
             length = middle
         else:
             right = middle + 1
@@ -83,7 +83,7 @@ def fact_binary_search(facts, key):
     while left < length:
         middle = (left + length) // 2
         f = facts[middle]
-        if key > f.lh.terms[f.lh.index]:
+        if key > f.left_side.terms[f.left_side.index]:
             left = middle + 1
         else:
             length = middle

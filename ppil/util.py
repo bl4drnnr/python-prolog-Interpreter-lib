@@ -2,7 +2,7 @@ import re
 from itertools import chain
 from more_itertools import unique_everseen
 
-__all__ = ["is_number", "is_variable", "rh_val_get", "unifiable_check", "lh_eval"]
+__all__ = ["is_number", "is_variable", "rh_val_get", "unifiable_check", "left_side_eval"]
 
 
 def is_variable(term):
@@ -37,7 +37,7 @@ def prob_parser(domain, rule_string, rule_terms):
     return key, value
 
 
-def rh_val_get(rh_arg, lh_arg, rh_domain):
+def rh_val_get(rh_arg, left_side_arg, rh_domain):
     if is_variable(rh_arg):
         rh_val = rh_domain.get(rh_arg)
     else: rh_val = rh_arg
@@ -45,20 +45,20 @@ def rh_val_get(rh_arg, lh_arg, rh_domain):
     return rh_val
     
 
-def unifiable_check(nterms, rh, lh):
-    if nterms != len(lh.terms): 
+def unifiable_check(nterms, rh, left_side):
+    if nterms != len(left_side.terms): 
         return False
-    if rh.predicate != lh.predicate: 
+    if rh.predicate != left_side.predicate: 
         return False
     
 
-def lh_eval(rh_val, lh_arg, lh_domain):
-    if is_variable(lh_arg):
-        lh_val = lh_domain.get(lh_arg)
-        if not lh_val: 
-            lh_domain[lh_arg] = rh_val
-        elif lh_val != rh_val:
+def left_side_eval(rh_val, left_side_arg, left_side_domain):
+    if is_variable(left_side_arg):
+        left_side_val = left_side_domain.get(left_side_arg)
+        if not left_side_val: 
+            left_side_domain[left_side_arg] = rh_val
+        elif left_side_val != rh_val:
             return False          
-    elif lh_arg != rh_val: 
+    elif left_side_arg != rh_val: 
         return False
 

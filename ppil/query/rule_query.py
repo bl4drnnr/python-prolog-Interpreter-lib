@@ -19,13 +19,13 @@ def answer_handler(answer):
 def rule_query(knowledge_database, expr):
     answer = []
     start = Goal(Fact("start(search):-from(random_point)"))
-    start.fact.rhs = [expr]
+    start.fact.right_side = [expr]
     queue = SearchQueue()
     queue.push(start)
 
     while not queue.empty:
         current_goal = queue.pop()
-        if current_goal.ind >= len(current_goal.fact.rhs):
+        if current_goal.ind >= len(current_goal.fact.right_side):
             if current_goal.parent is None:
                 if current_goal.domain:
                     answer.append(current_goal.domain)
@@ -36,7 +36,7 @@ def rule_query(knowledge_database, expr):
             child_to_parent(current_goal, queue)
             continue
         
-        rule = current_goal.fact.rhs[current_goal.ind]
+        rule = current_goal.fact.right_side[current_goal.ind]
         
         if rule.predicate == "":
             prob_calc(current_goal, rule, queue)

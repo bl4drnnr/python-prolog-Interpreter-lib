@@ -12,20 +12,20 @@ class KnowledgeDatabase(object):
     def init_knowledge_database(self, database):
         for i in database:
             i = Fact(i)
-            g = [Goal(Fact(r.to_string())) for r in i.rhs]
+            g = [Goal(Fact(r.to_string())) for r in i.right_side]
 
-            if i.lh.predicate in self.db:
-                self.db[i.lh.predicate]["facts"].push(i)
-                self.db[i.lh.predicate]["terms"].push(i.terms)
-                self.db[i.lh.predicate]["goals"].push(g)
+            if i.left_side.predicate in self.db:
+                self.db[i.left_side.predicate]["facts"].push(i)
+                self.db[i.left_side.predicate]["terms"].push(i.terms)
+                self.db[i.left_side.predicate]["goals"].push(g)
             else:
-                self.db[i.lh.predicate] = {}
-                self.db[i.lh.predicate]["facts"] = FactHeap()
-                self.db[i.lh.predicate]["facts"].push(i)
-                self.db[i.lh.predicate]["goals"] = FactHeap()
-                self.db[i.lh.predicate]["goals"].push(g)
-                self.db[i.lh.predicate]["terms"] = FactHeap()
-                self.db[i.lh.predicate]["terms"].push(i.terms)
+                self.db[i.left_side.predicate] = {}
+                self.db[i.left_side.predicate]["facts"] = FactHeap()
+                self.db[i.left_side.predicate]["facts"].push(i)
+                self.db[i.left_side.predicate]["goals"] = FactHeap()
+                self.db[i.left_side.predicate]["goals"].push(g)
+                self.db[i.left_side.predicate]["terms"] = FactHeap()
+                self.db[i.left_side.predicate]["terms"].push(i.terms)
 
     def __call__(self, args):
         self.init_knowledge_database(args)
