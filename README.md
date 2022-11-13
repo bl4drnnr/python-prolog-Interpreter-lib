@@ -3,6 +3,8 @@
 1. [Python PROLOG Interpreter Library](#python-prolog-interpreter-library)
 2. [Installation](#installation)
 3. [Documentation](#documentation)
+   1. [Data types](#data-types)
+   2. [Rules and facts](#rules-and-facts)
 4. [References and contact](#references-and-contact)
 5. [Licence](#license)
 
@@ -29,6 +31,90 @@ Right now, you are reading about `Python` library, if you want to find out more 
 ---
 
 ## Documentation
+
+A little introduction to **_Prolog_**.
+
+In Prolog, program logic is expressed in terms of relations, and a computation is initiated by running a query over these relations. 
+Relations and queries are constructed using Prolog's single data type, the term. Relations are defined by clauses. Given a query, the Prolog engine attempts to find a resolution refutation of the negated query. 
+If the negated query can be refuted, i.e., an instantiation for all free variables is found that makes the union of clauses and the singleton set consisting of the negated query false, it follows that the original query, with the found instantiation applied, is a logical consequence of the program. 
+This makes Prolog (and other logic programming languages) particularly useful for database, symbolic mathematics, and language parsing applications. Because Prolog allows impure predicates, checking the truth value of certain special predicates may have some deliberate side effect, such as printing a value to the screen. 
+Because of this, the programmer is permitted to use some amount of conventional imperative programming when the logical paradigm is inconvenient. It has a purely logical subset, called "pure Prolog", as well as a number of extralogical features.
+
+### Data types
+
+Prolog's single data type is the term. Terms are either atoms, numbers, variables or compound terms.
+
+- An **atom** is a general-purpose name with no inherent meaning. Examples of atoms include `x`, `red`, `Taco`, and `some atom`.
+- **Numbers** can be floats or integers. ISO standard compatible Prolog systems can check the Prolog flag "bounded". Most of the major Prolog systems support arbitrary length integer numbers.
+- **Variables** are denoted by a string consisting of letters, numbers and underscore characters, and beginning with an upper-case letter or underscore. Variables closely resemble variables in logic in that they are placeholders for arbitrary terms.
+- A **compound term** is composed of an atom called a "functor" and a number of "arguments", which are again terms. Compound terms are ordinarily written as a functor followed by a comma-separated list of argument terms, which is contained in parentheses. The number of arguments is called the term's arity. An atom can be regarded as a compound term with arity zero. An example of a compound term is `person_friends(zelda,[tom,jim])`.
+
+Special cases of compound terms:
+
+- A _List_ is an ordered collection of terms. It is denoted by square brackets with the terms separated by commas, or in the case of the empty list, by `[]`. For example, `[1,2,3]` or `[red,green,blue]`.
+- _Strings_: A sequence of characters surrounded by quotes is equivalent to either a list of (numeric) character codes, a list of characters (atoms of length 1), or an atom depending on the value of the Prolog flag `double_quotes`. For example, `to be, or not to be`.
+
+### Rules and facts
+
+Prolog programs describe relations, defined by means of clauses. Pure Prolog is restricted to **_Horn clauses_**. There are two types of clauses: facts and rules. A rule is of the form
+
+```
+Head :- Body.
+```
+
+and is read as "Head is true if Body is true". 
+A rule's body consists of calls to predicates, which are called the rule's **goals**. 
+The built-in logical operator `,/2` (meaning an arity 2 operator with name `,`) denotes conjunction of goals, and `;/2` denotes disjunction. Conjunctions and disjunctions can only appear in the body, not in the head of a rule.
+
+Clauses with empty bodies are called facts. An example of a fact is:
+
+```
+cat(tom).
+```
+
+which is equivalent to the rule:
+
+```
+cat(tom) :- true.
+```
+
+The built-in predicate `true/0` is always true.
+
+Given the above fact, one can ask:
+
+_is tom a cat?_
+
+```
+? - cat(tom).
+Yes
+```
+
+_what things are cats?_
+
+```
+? - cat(X).
+X = tom
+```
+
+Clauses with bodies are called **rules**. An example of a rule is:
+
+```
+animal(X) :- cat(X).
+```
+
+If we add that rule and ask _what things are animals_?
+
+```
+? - animal(X).
+X = tom
+```
+
+Due to the relational nature of many built-in predicates, they can typically be used in several directions. For example, `length/2` can be used to determine the length of a list (`length(List, L)`, given a list `List`) as well as to generate a list skeleton of a given length
+(`length(X, 5)`), and also to generate both list skeletons and their lengths together (`length(X, L)`). Similarly, `append/3` can be used both to append two lists (`append(ListA, ListB, X)` given lists `ListA` and `ListB`) as well as to split a given list into
+parts (`append(X, Y, List)`, given a list `List`). For this reason, a comparatively small set of library predicates suffices for many Prolog programs.
+
+As a general purpose language, Prolog also provides various built-in predicates to perform routine activities like input/output, using graphics and otherwise communicating with the operating system. 
+These predicates are not given a relational meaning and are only useful for the side-effects they exhibit on the system. For example, the predicate `write/1` displays a term on the screen.
 
 ---
 
