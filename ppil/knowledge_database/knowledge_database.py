@@ -1,6 +1,6 @@
-from ppil.pq import FactHeap
 from ppil.query.rule_query import *
-from ppil.search_util import *
+from ppil.prolog_elements.goal import Goal
+from ppil.prolog_elements.fact import Fact
 
 
 class KnowledgeDatabase(object):
