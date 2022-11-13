@@ -1,14 +1,13 @@
-from ppil.pq import FactHeap
 from ppil.query.rule_query import *
-from ppil.search_util import *
+from ppil.prolog_elements.goal import Goal
+from ppil.prolog_elements.fact import Fact
 
 
 class KnowledgeDatabase(object):
     def __init__(self, name):
         self.db = {}
         self.name = name
-        self._cache = {}
-    
+
     def init_knowledge_database(self, database):
         for i in database:
             i = Fact(i)

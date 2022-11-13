@@ -26,8 +26,8 @@ def main():
 
     # answer = {"What": "michal"}
     query = ancestors_db.query(ppil.Expression("matka(larysa, What)"))
-    for i in query:
-        print(i)
+    # for i in query:
+    #     print(i)
     # assert answer in query
 
 

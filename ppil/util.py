@@ -1,6 +1,4 @@
 import re
-from itertools import chain
-from more_itertools import unique_everseen
 
 __all__ = ["is_number", "is_variable", "rh_val_get", "unifiable_check", "left_side_eval"]
 

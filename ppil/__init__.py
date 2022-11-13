@@ -5,6 +5,5 @@ from ppil.prolog_elements.fact import Fact
 # Knowledge database
 from ppil.knowledge_database.knowledge_database import KnowledgeDatabase
 
-from .pq import SearchQueue
-from .unify import unify
+# Expression is used as main tool to create requests
 from ppil.expression.expression import Expression
