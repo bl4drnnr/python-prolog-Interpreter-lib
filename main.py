@@ -1,5 +1,9 @@
+import ppil
+
+
 def main():
-    pass
+    database = ppil.KnowledgeDatabase("test name")
+    database(["ma(ania, kota)"])
 
 
 if __name__ == '__main__':
