@@ -1,6 +1,10 @@
 import re
 from .interpreter import Conjunction, Variable, Term, TRUE, Rule
-from .regex import ELEM_REGEX, ATOM_NAME_REGEX, VARIABLE_REGEX
+from .regex import VARIABLE_REGEX
+
+
+def _parse_atom(rule):
+    return rule.split('(')[0]
 
 
 def _check_if_term_is_rule(term):
@@ -20,15 +24,25 @@ def _split_database_string(input_text):
 
 class Parser(object):
     def __init__(self, input_text):
+        self._current_rule = None
+        self._variables = None
         self._input_text = input_text
         self._elems = _split_database_string(input_text)
 
     def parse_rules(self):
-        return [self._parse_rule(elem) for elem in self._elems]
+        parsed_rules = []
+
+        for elem in self._elems:
+            self._variables = {}
+            parsed_rules.append(self._parse_rule(elem))
+
+        return parsed_rules
 
     def parse_query(self):
+        self._variables = {}
         query = self._input_text.strip().replace(" ", "")
-        functor = self._parse_atom(query)
+
+        functor = _parse_atom(query)
         arguments = self._parse_arguments(query)
         return Term(functor, arguments)
 
@@ -48,9 +62,6 @@ class Parser(object):
         tail_terms = [self._parse_term(item) for item in parsed_tail]
         return Conjunction(tail_terms)
 
-    def _parse_atom(self, rule):
-        return rule.split('(')[0]
-
     def _parse_term(self, rule):
         try:
             [head, tail] = rule.split(':-')
@@ -58,7 +69,7 @@ class Parser(object):
             head = rule
             tail = []
 
-        functor = self._parse_atom(head)
+        functor = _parse_atom(head)
         arguments = self._parse_arguments(head)
         parsed_tail = self._parse_tail(tail)
 
@@ -71,12 +82,26 @@ class Parser(object):
 
         for item in rule.split(','):
             if '(' in item:
-                rule = Term(item.split('(')[1])
+                parsed_rule_string = item.split('(')[1]
             elif ')' in item:
-                rule = Term(item.split(')')[0])
+                parsed_rule_string = item.split(')')[0]
             else:
-                rule = Term(item)
-            parsed_arguments.append(rule)
+                parsed_rule_string = item
+            self._current_rule = Term(parsed_rule_string)
+
+            if re.match(VARIABLE_REGEX, parsed_rule_string) is not None:
+                if parsed_rule_string == "_":
+                    return Variable("_")
+
+                variable = self._variables.get(parsed_rule_string)
+
+                if variable is None:
+                    self._variables[parsed_rule_string] = Variable(parsed_rule_string)
+                    variable = self._variables[parsed_rule_string]
+
+                parsed_arguments.append(variable)
+            else:
+                parsed_arguments.append(self._current_rule)
 
         return parsed_arguments
 
