@@ -26,17 +26,17 @@ def split_database_string(input_text):
 class Parser(object):
     def __init__(self, input_text):
         self._input_text = input_text
-        self._elems2 = split_database_string2(input_text)
+        self._elems = split_database_string2(input_text)
 
     def parse_rules(self):
         rules2 = []
-        for elem in self._elems2:
-            rules2.append(self._parse_rule2(elem))
+        for elem in self._elems:
+            rules2.append(self._parse_rule(elem))
         return rules2
 
-    def parse_query2(self):
+    def parse_query(self):
         text = self._input_text.strip().replace(" ", "")
-        functor = self._parse_atom2(text)
+        functor = self._parse_atom(text)
 
         parsed_arguments = []
 
@@ -66,46 +66,43 @@ class Parser(object):
             else:
                 parsed_tail.append(item)
 
-        tail_terms = [self._parse_term2(item) for item in parsed_tail]
+        tail_terms = [self._parse_term(item) for item in parsed_tail]
         return Conjunction(tail_terms)
 
-    def _parse_atom2(self, rule):
+    def _parse_atom(self, rule):
         return rule.split('(')[0]
 
-    def _parse_term2(self, rule):
+    def _parse_term(self, rule):
         try:
             [head, tail] = rule.split(':-')
         except (Exception,):
             head = rule
             tail = []
 
-        functor = self._parse_atom2(head)
-        arguments = self._parse_arguments2(head)
+        functor = self._parse_atom(head)
+        arguments = self._parse_arguments(head)
         parsed_tail = self._parse_tail(tail)
 
         return [Term(functor, arguments), parsed_tail] \
             if parsed_tail \
             else Term(functor, arguments)
 
-    def _parse_arguments2(self, rule):
+    def _parse_arguments(self, rule):
         parsed_arguments = []
 
         for item in rule.split(','):
             if '(' in item:
-                parsed_arguments.append(item.split('(')[1])
+                rule = Term(item.split('(')[1])
             elif ')' in item:
-                parsed_arguments.append(item.split(')')[0])
+                rule = Term(item.split(')')[0])
             else:
-                parsed_arguments.append(item)
+                rule = Term(item)
+            parsed_arguments.append(rule)
 
-        t = []
-        for i in parsed_arguments:
-            t.append(Term(i))
+        return parsed_arguments
 
-        return t
-
-    def _parse_rule2(self, rule):
-        term_head = self._parse_term2(rule)
+    def _parse_rule(self, rule):
+        term_head = self._parse_term(rule)
 
         if check_if_term_is_rule(rule):
             return Rule(term_head[0], term_head[1])

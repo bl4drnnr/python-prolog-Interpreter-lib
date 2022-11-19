@@ -9,7 +9,7 @@ class PrologDatabase(object):
         self.database = Database(rules)
 
     def find_solutions(self, query_text):
-        query = Parser(query_text).parse_query2()
+        query = Parser(query_text).parse_query()
 
         query_variable_map = {}
         variables_in_query = False
