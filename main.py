@@ -1,4 +1,4 @@
-from ppil import PrologDatabase
+from ppil import KnowledgeDatabase
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
         osoba(ania, person7, person8, f, 773).
     """
 
-    db = PrologDatabase(db_playload1)
+    db = KnowledgeDatabase(db_playload1)
     solution = db.find_solutions(query)
     print('solution', solution)
 

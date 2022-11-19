@@ -1,1 +1,1 @@
-from .prolog_database import PrologDatabase
+from .knowledge_database import KnowledgeDatabase

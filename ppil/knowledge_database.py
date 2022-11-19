@@ -3,7 +3,7 @@ from .parser import Parser
 from collections import defaultdict
 
 
-class PrologDatabase(object):
+class KnowledgeDatabase(object):
     def __init__(self, rules_text):
         rules = Parser(rules_text).parse_rules()
         self.database = Database(rules)
