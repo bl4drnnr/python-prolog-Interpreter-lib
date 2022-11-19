@@ -1,4 +1,4 @@
-from ppil import KnowledgeDatabase
+from src.ppil import KnowledgeDatabase
 
 
 def test_simple_goal_query():
@@ -364,15 +364,3 @@ def test_alternate_einstein_puzzle():
     assert "german" in [
         str(solution) for solution in solutions.get("FishOwner")
     ]
-
-
-test_simple_goal_query()
-test_simple_goal_query2()
-test_simple_variable_query()
-test_multi_variable_solutions()
-test_find_bad_dog()
-test_rule_sub()
-test_rule_sub2()
-test_multiple_var_query()
-test_einstein_puzzle()
-test_alternate_einstein_puzzle()
