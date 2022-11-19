@@ -1,4 +1,4 @@
-from ppil import KnowledgeDatabase
+from src.ppil import KnowledgeDatabase
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
         osoba(ola, person3, person4, f, 75).
         osoba(wlodzimierz, person5, person6, m, 81).
         osoba(ania, person7, person8, f, 773).
-        test(X, Y) :- osoba(X, Y, A, B, C), osoba(X, Y, G, D, E).
+        tests(X, Y) :- osoba(X, Y, A, B, C), osoba(X, Y, G, D, E).
     """
 
     query = """

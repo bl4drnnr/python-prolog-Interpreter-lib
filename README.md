@@ -45,33 +45,31 @@ pip install ppil
 Here is example of usage and, at the same time, the way how you can test the program:
 
 ```python
-import ppil
+from ppil import KnowledgeDatabase
 
-ancestors_payload = [
-    "person(michael, john, ann, m, 19)",
-    "person(john, jeff, jenny, m, 56)",
-    "person(ann, andrew, ewa, f, 45)",
-    "person(jordan, andrew, ewa, m, 48)",
-    "person(andrew, person1, person2, m, 82)",
-    "person(ewa, person3, person4, f, 75)",
-    "person(jeff, person5, person6, m, 81)",
-    "person(jenny, person7, person8, f, 77)",
-    "mom(X, Y) : -person(X, _, _, _, E), person(Y, _, W, _, L), W = X, M1 is L + 14, E >= M1",
-    "father(X, Y) :- person(X, _, _, _, E), person(Y, W, _, _, L), W = X, M1 is L + 14, E >= M1",
-    "brother(X, Y) :- person(X,B,C,D,_), person(Y,P,M,_,_), B = P, C = M, D = m, X \= Y",
-    "sister(X, Y) :- person(X, Q, W, E, _), person(Y, A, B, _, _), Q = A, W = B, E = f, X \= Y",
-    "grandmother(X, Y) :- (((mom(A, Y), mom(X, B)); (mom(X, A), father(B, Y))), A = B)",
-    "grandad(X, Y) :- (((father(A, Y), father(X, B)); (father(X, A), mom(B, Y))), A = B)"
-]
+ancestors_payload = """
+   person(michael, john, ann, m, 19).
+   person(john, jeff, jenny, m, 56).
+   person(ann, andrew, ewa, f, 45).
+   person(jordan, andrew, ewa, m, 48).
+   person(andrew, person1, person2, m, 82).
+   person(ewa, person3, person4, f, 75).
+   person(jeff, person5, person6, m, 81).
+   person(jenny, person7, person8, f, 77).
+   mom(X, Y) : -person(X, _, _, _, E), person(Y, _, W, _, L), W = X, M1 is L + 14, E >= M1.
+   father(X, Y) :- person(X, _, _, _, E), person(Y, W, _, _, L), W = X, M1 is L + 14, E >= M1.
+   brother(X, Y) :- person(X,B,C,D,_), person(Y,P,M,_,_), B = P, C = M, D = m, X \= Y.
+   sister(X, Y) :- person(X, Q, W, E, _), person(Y, A, B, _, _), Q = A, W = B, E = f, X \= Y.
+   grandmother(X, Y) :- (((mom(A, Y), mom(X, B)); (mom(X, A), father(B, Y))), A = B).
+   grandad(X, Y) :- (((father(A, Y), father(X, B)); (father(X, A), mom(B, Y))), A = B).
+"""
 
-ancestors_db = ppil.KnowledgeDatabase("my db")
-ancestors_db(ancestors_payload)
+query = """
+        osoba(ania, person7, person8, f, 77).
+"""
 
-assert ancestors_db.query(ppil.Expression("person(michael, john, ann, m, 19)")) == ["Yes"]
-
-answer = {"What": "michael"}
-query = ancestors_db.query(ppil.Expression("mom(ann, What)"))
-assert answer in query
+ancestors_db = ppil.KnowledgeDatabase(ancestors_payload)
+solution = ancestors_db.find_solutions(query)
 ```
 
 More about how it works, you can find below, in [Documentation](#documentation) section.
@@ -175,27 +173,32 @@ import ppil
 ```
 
 Then, using library, create object of `KnowledgeDatabase` and pass a payload to it.
-**_Remember, you also need to provide a name of your knowledge database_**:
 
 ```python
-import ppil
+from ppil import KnowledgeDatabase
 
-database_payload = [
-    "person(michael, john, ann, m, 19)"
-]
+database_payload = """
+    is_tall(jack, yes).
+    is_tall(eric, no).
+    is_tall(johnny, yes).
+    is_tall(mark, no).
+"""
 
-database = ppil.KnowledgeDatabase("My database")
-database(database_payload)
+goal = """
+        is_tall(Y, yes)
+"""
+
+database = ppil.KnowledgeDatabase(KnowledgeDatabase)
+solution = database.find_solutions(goal)
 ```
 
-Now, you are free to go, you `.query` and `.Expression` methods in order to manipulate your database:
+Now, you are free to go, use `.find_solutions` method in order to manipulate your database:
 
 ```python
-assert database.query(ppil.Expression("person(michael, john, ann, m, 19)")) == ["Yes"]
+assert len(solutions.get("Y")) == 2
 
-answer = {"What": "michael"}
-query = database.query(ppil.Expression("mom(ann, What)"))
-assert answer in query
+assert ("jack" in str(solution) for solution in solutions.get("Y"))
+assert ("johnny" in str(solution) for solution in solutions.get("Y"))
 ```
 
 ---
