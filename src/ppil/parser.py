@@ -1,6 +1,6 @@
 import re
 from .interpreter import Conjunction, Variable, Term, TRUE, Rule
-from .regex import VARIABLE_REGEX
+from .regex import VARIABLE_REGEX, ARGUMENTS_REGEX
 
 
 def _parse_atom(rule):
@@ -18,7 +18,7 @@ def _check_rule_format(rule):
 
 def _split_database_string(input_text):
     split_database = input_text.split('.')
-    split_database = [item.strip().replace(" ", "") for item in split_database]
+    split_database = [item.strip().replace(" ", "").replace("\n", "") for item in split_database]
     return split_database[:-1]
 
 
@@ -78,17 +78,12 @@ class Parser(object):
             else Term(functor, arguments)
 
     def _parse_arguments(self, rule):
+        a = re.findall(ARGUMENTS_REGEX, rule)[0].split('(')[1].split(')')[0]
+        arguments = a.split(',') if ',' in a else [a]
+
         parsed_arguments = []
 
-        for item in rule.split(','):
-            if '(' in item:
-                parsed_rule_string = item.split('(')[1]
-            elif ')' in item:
-                parsed_rule_string = item.split(')')[0]
-            else:
-                parsed_rule_string = item
-            self._current_rule = Term(parsed_rule_string)
-
+        for parsed_rule_string in arguments:
             if re.match(VARIABLE_REGEX, parsed_rule_string) is not None:
                 if parsed_rule_string == "_":
                     return Variable("_")
@@ -101,7 +96,8 @@ class Parser(object):
 
                 parsed_arguments.append(variable)
             else:
-                parsed_arguments.append(self._current_rule)
+                parsed_arguments.append(Term(parsed_rule_string))
+            self._current_rule = Term(parsed_rule_string)
 
         return parsed_arguments
 
