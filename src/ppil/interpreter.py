@@ -12,29 +12,22 @@ class Term(object):
         if isinstance(other_term, Variable):
             return other_term.match_variable_bindings(self)
         if isinstance(other_term, Term):
-            if self.functor != other_term.functor or len(
-                self.arguments
-            ) != len(other_term.arguments):
+            if self.functor != other_term.functor or len(self.arguments) != len(other_term.arguments):
                 return None
-            zipped_argument_list = list(
-                zip(self.arguments, other_term.arguments)
-            )
+
+            zipped_argument_list = list(zip(self.arguments, other_term.arguments))
+
             matched_argument_var_bindings = [
                 arguments[0].match_variable_bindings(arguments[1])
                 for arguments in zipped_argument_list
             ]
-            return reduce(
-                Database.merge_bindings, [{}] + matched_argument_var_bindings
-            )
+            return reduce(Database.merge_bindings, [{}] + matched_argument_var_bindings)
 
     def substitute_variable_bindings(self, variable_bindings):
-        return Term(
-            self.functor,
-            [
+        return Term(self.functor, [
                 argument.substitute_variable_bindings(variable_bindings)
                 for argument in self.arguments
-            ],
-        )
+            ])
 
     def query(self, database):
         yield from database.query(self)
@@ -82,9 +75,7 @@ class Variable(object):
         bound_variable_value = variable_bindings.get(self)
 
         if bound_variable_value:
-            return bound_variable_value.substitute_variable_bindings(
-                variable_bindings
-            )
+            return bound_variable_value.substitute_variable_bindings(variable_bindings)
 
         return self
 
@@ -118,31 +109,22 @@ class Conjunction(Term):
             else:
                 current_term = self.arguments[argument_index]
 
-                for item in database.query(
-                    current_term.substitute_variable_bindings(
-                        variable_bindings
-                    )
-                ):
-
+                for item in database.query(current_term.substitute_variable_bindings(variable_bindings)):
                     combined_variable_bindings = Database.merge_bindings(
                         current_term.match_variable_bindings(item),
                         variable_bindings,
                     )
 
                     if combined_variable_bindings is not None:
-                        yield from find_solutions(
-                            argument_index + 1, combined_variable_bindings
-                        )
+                        yield from find_solutions(argument_index + 1, combined_variable_bindings)
 
         yield from find_solutions(0, {})
 
     def substitute_variable_bindings(self, variable_bindings):
-        return Conjunction(
-            [
+        return Conjunction([
                 argument.substitute_variable_bindings(variable_bindings)
                 for argument in self.arguments
-            ]
-        )
+            ])
 
     def __str__(self):
         return ", ".join(str(argument) for argument in self.arguments)
@@ -157,28 +139,15 @@ class Database(object):
 
     def query(self, goal):
         for index, rule in enumerate(self.rules):
-            matching_head_var_bindings = rule.head.match_variable_bindings(
-                goal
-            )
+            matching_head_var_bindings = rule.head.match_variable_bindings(goal)
 
             if matching_head_var_bindings is not None:
-
-                matched_head_item = rule.head.substitute_variable_bindings(
-                    matching_head_var_bindings
-                )
-                matched_tail_item = rule.tail.substitute_variable_bindings(
-                    matching_head_var_bindings
-                )
+                matched_head_item = rule.head.substitute_variable_bindings(matching_head_var_bindings)
+                matched_tail_item = rule.tail.substitute_variable_bindings(matching_head_var_bindings)
 
                 for matching_item in matched_tail_item.query(self):
-
-                    matcng_tail_var_bndngs = matched_tail_item.match_variable_bindings(
-                        matching_item
-                    )
-
-                    yield matched_head_item.substitute_variable_bindings(
-                        matcng_tail_var_bndngs
-                    )
+                    match_head_var_bindings = matched_tail_item.match_variable_bindings(matching_item)
+                    yield matched_head_item.substitute_variable_bindings(match_head_var_bindings)
 
     @staticmethod
     def merge_bindings(first_bindings_map, second_bindings_map):
@@ -191,13 +160,9 @@ class Database(object):
             merged_bindings[variable] = value
 
         for variable, value in second_bindings_map.items():
-
             if variable in merged_bindings:
-
                 existing_variable_binding = merged_bindings[variable]
-                shared_bindings = existing_variable_binding.match_variable_bindings(
-                    value
-                )
+                shared_bindings = existing_variable_binding.match_variable_bindings(value)
 
                 if shared_bindings is not None:
                     for variable_, value_ in shared_bindings.items():

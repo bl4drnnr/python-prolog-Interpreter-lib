@@ -21,23 +21,17 @@ class KnowledgeDatabase(object):
 
         matching_query_terms = [item for item in self.database.query(query)]
 
-        if matching_query_terms:
-            if query_variable_map:
-
-                solutions_map = defaultdict(list)
-                for matching_query_term in matching_query_terms:
-                    matching_variable_bindings = query.match_variable_bindings(
-                        matching_query_term
-                    )
-
-                    for variable_name, variable in query_variable_map.items():
-                        solutions_map[variable_name].append(
-                            matching_variable_bindings.get(variable)
-                        )
-
-                return solutions_map
-
-            else:
-                return True if not variables_in_query else None
-        else:
+        if not matching_query_terms:
             return False if not variables_in_query else None
+
+        if query_variable_map:
+            solutions_map = defaultdict(list)
+            for matching_query_term in matching_query_terms:
+                matching_variable_bindings = query.match_variable_bindings(matching_query_term)
+
+                for variable_name, variable in query_variable_map.items():
+                    solutions_map[variable_name].append(matching_variable_bindings.get(variable))
+
+            return solutions_map
+
+        return True if not variables_in_query else None
