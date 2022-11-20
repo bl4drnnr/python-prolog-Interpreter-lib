@@ -4,7 +4,7 @@ from .interpreter import Conjunction, Variable, Term, TRUE, Rule
 from .elem_regex import VARIABLE_REGEX, ARGUMENTS_REGEX
 
 
-def _parse_atom(rule):
+def _parse_functor(rule):
     return rule.split('(')[0]
 
 
@@ -26,31 +26,19 @@ def _split_database_string(input_text):
 def _parse_internal_rule(rule):
     data = pcre.findall(ARGUMENTS_REGEX, rule)
     filtered_data = [i[1] for i in data]
-    all_predicates = filtered_data[0]
+
     res = {}
 
-    for i in filtered_data[1:]:
-        index = rule.find(i)
-        predicates_list = rule[:index].split('(')[:-1][-1]
+    for item in filtered_data:
+        index = rule.index(item)
+        predicate_list = rule[:index].split('(')[:-1][-1]
 
         found_predicate = ''
-        for sym in predicates_list[::-1]:
+        for sym in predicate_list[::-1]:
             if sym in [',', ';']:
                 break
             found_predicate += sym
-
-        res[found_predicate[::-1]] = i
-
-    predicate = ''
-    for i in all_predicates:
-        if i in [',', ';'] and '(' not in predicate and ')' not in predicate:
-            if predicate not in res:
-                res[predicate] = None
-                predicate = ''
-                continue
-        if '(' in predicate and ')' in predicate:
-            predicate = ''
-        predicate += i
+        res[found_predicate[::-1]] = item
 
     return res
 
@@ -75,7 +63,7 @@ class Parser(object):
         self._variables = {}
         query = self._input_text.strip().replace(" ", "")
 
-        functor = _parse_atom(query)
+        functor = _parse_functor(query)
         arguments = self._parse_arguments(query)
         return Term(functor, arguments)
 
@@ -83,6 +71,7 @@ class Parser(object):
         if not len(tail):
             return None
 
+        # TODO DONT FORGET TO PARSE TAIL
         parsed_tail = []
         split_tail = tail.split('),')
 
@@ -102,7 +91,7 @@ class Parser(object):
             head = rule
             tail = []
 
-        functor = _parse_atom(head)
+        functor = _parse_functor(head)
         arguments = self._parse_arguments(head)
         parsed_tail = self._parse_tail(tail)
 
@@ -115,23 +104,24 @@ class Parser(object):
         parsed_arguments = []
 
         for parsed_rule_key, parsed_rule_value in parsed_rule.items():
-            if re.match(VARIABLE_REGEX, parsed_rule_key) is not None:
-                if parsed_rule_key == "_":
-                    return Variable("_")
+            t = parsed_rule_value.split(',')
+            for item in t:
+                if re.match(VARIABLE_REGEX, item) is not None:
+                    if item == "_":
+                        return Variable("_")
 
-                variable = self._variables.get(parsed_rule_key)
+                    variable = self._variables.get(item)
 
-                if variable is None:
-                    self._variables[parsed_rule_key] = Variable(parsed_rule_key)
-                    variable = self._variables[parsed_rule_key]
+                    if variable is None:
+                        self._variables[item] = Variable(item)
+                        variable = self._variables[item]
 
-                parsed_arguments.append(variable)
-            else:
-                if parsed_rule_value is None:
-                    parsed_arguments.append(Term(parsed_rule_key))
+                    parsed_arguments.append(variable)
                 else:
-                    args = [Term(a) for a in parsed_rule_value.split(',')]
-                    parsed_arguments.append(Term(parsed_rule_key, args))
+                    if parsed_rule_value is None:
+                        parsed_arguments.append(Term(parsed_rule_key))
+                    else:
+                        parsed_arguments.append(Term(item))
 
         return parsed_arguments
 
