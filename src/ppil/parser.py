@@ -1,6 +1,7 @@
 import re
+import pcre
 from .interpreter import Conjunction, Variable, Term, TRUE, Rule
-from .regex import VARIABLE_REGEX, ARGUMENTS_REGEX
+from .elem_regex import VARIABLE_REGEX, ARGUMENTS_REGEX
 
 
 def _parse_atom(rule):
@@ -20,6 +21,38 @@ def _split_database_string(input_text):
     split_database = input_text.split('.')
     split_database = [item.strip().replace(" ", "").replace("\n", "") for item in split_database]
     return split_database[:-1]
+
+
+def _parse_internal_rule(rule):
+    data = pcre.findall(ARGUMENTS_REGEX, rule)
+    filtered_data = [i[1] for i in data]
+    all_predicates = filtered_data[0]
+    res = {}
+
+    for i in filtered_data[1:]:
+        index = rule.find(i)
+        predicates_list = rule[:index].split('(')[:-1][-1]
+
+        found_predicate = ''
+        for sym in predicates_list[::-1]:
+            if sym in [',', ';']:
+                break
+            found_predicate += sym
+
+        res[found_predicate[::-1]] = i
+
+    predicate = ''
+    for i in all_predicates:
+        if i in [',', ';'] and '(' not in predicate and ')' not in predicate:
+            if predicate not in res:
+                res[predicate] = None
+                predicate = ''
+                continue
+        if '(' in predicate and ')' in predicate:
+            predicate = ''
+        predicate += i
+
+    return res
 
 
 class Parser(object):
@@ -78,26 +111,27 @@ class Parser(object):
             else Term(functor, arguments)
 
     def _parse_arguments(self, rule):
-        a = re.findall(ARGUMENTS_REGEX, rule)[0].split('(')[1].split(')')[0]
-        arguments = a.split(',') if ',' in a else [a]
-
+        parsed_rule = _parse_internal_rule(rule)
         parsed_arguments = []
 
-        for parsed_rule_string in arguments:
-            if re.match(VARIABLE_REGEX, parsed_rule_string) is not None:
-                if parsed_rule_string == "_":
+        for parsed_rule_key, parsed_rule_value in parsed_rule.items():
+            if re.match(VARIABLE_REGEX, parsed_rule_key) is not None:
+                if parsed_rule_key == "_":
                     return Variable("_")
 
-                variable = self._variables.get(parsed_rule_string)
+                variable = self._variables.get(parsed_rule_key)
 
                 if variable is None:
-                    self._variables[parsed_rule_string] = Variable(parsed_rule_string)
-                    variable = self._variables[parsed_rule_string]
+                    self._variables[parsed_rule_key] = Variable(parsed_rule_key)
+                    variable = self._variables[parsed_rule_key]
 
                 parsed_arguments.append(variable)
             else:
-                parsed_arguments.append(Term(parsed_rule_string))
-            self._current_rule = Term(parsed_rule_string)
+                if parsed_rule_value is None:
+                    parsed_arguments.append(Term(parsed_rule_key))
+                else:
+                    args = [Term(a) for a in parsed_rule_value.split(',')]
+                    parsed_arguments.append(Term(parsed_rule_key, args))
 
         return parsed_arguments
 
