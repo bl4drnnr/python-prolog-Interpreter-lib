@@ -33,7 +33,7 @@ def main():
     """
 
     query = """
-        lot(a231, monachium, warszawa, 1720, 1850, dni(0, 1, 1, 0, 1, 1, 1)).
+        lot(a231, monachium, warszawa, 1720, 1850, dni(1, 1, 1, 0, 1, 1, 1)).
     """
 
     db = KnowledgeDatabase(db_playload1)

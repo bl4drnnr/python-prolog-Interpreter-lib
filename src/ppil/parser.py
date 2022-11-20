@@ -24,7 +24,9 @@ def _split_database_string(input_text):
 
 
 def _parse_internal_rule(rule):
+    TEST_REGEX = r"\((.*)\)"
     data = pcre.findall(ARGUMENTS_REGEX, rule)
+    test = pcre.findall(TEST_REGEX, rule)
     filtered_data = [i[1] for i in data]
 
     res = {}
@@ -40,7 +42,16 @@ def _parse_internal_rule(rule):
             found_predicate += sym
         res[found_predicate[::-1]] = item
 
-    return res
+    res2 = {}
+
+    for k, v in res.items():
+        for item in test:
+            if (item == v) and (')' in item or '(' in item):
+                break
+            else:
+                res2[k] = v
+
+    return res2
 
 
 class Parser(object):
@@ -108,7 +119,8 @@ class Parser(object):
             for item in t:
                 if re.match(VARIABLE_REGEX, item) is not None:
                     if item == "_":
-                        return Variable("_")
+                        parsed_arguments.append(Variable("_"))
+                        continue
 
                     variable = self._variables.get(item)
 
