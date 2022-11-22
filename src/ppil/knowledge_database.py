@@ -1,4 +1,4 @@
-from .interpreter import Database, Variable
+from .elements import Variable, Database
 from .parser import Parser
 from collections import defaultdict
 

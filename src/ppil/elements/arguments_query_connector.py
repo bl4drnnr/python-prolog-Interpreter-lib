@@ -1,11 +1,8 @@
-from .elements.database import Database
-from .elements.term import Term
-from .elements.variable import Variable
-from .elements.true_statement import TRUE
-from .elements.rule import Rule
+from .database import Database
+from .term import Term
 
 
-class Conjunction(Term):
+class ArgumentsQueryConnector(Term):
     def __init__(self, arguments):
         super().__init__("", arguments)
 
@@ -28,7 +25,7 @@ class Conjunction(Term):
         yield from find_solutions(0, {})
 
     def substitute_variable_bindings(self, variable_bindings):
-        return Conjunction([
+        return ArgumentsQueryConnector([
                 argument.substitute_variable_bindings(variable_bindings)
                 for argument in self.arguments
             ])
