@@ -1,4 +1,5 @@
 import json
+from .exception_handler import WrongFactFormat, WrongJsonFormat
 
 JSON_FORMAT = {
     "predicate": {
@@ -125,5 +126,9 @@ class JsonConverter:
                 'lists': lists
             }
 
-        except (Exception,):
+        except WrongFactFormat:
             pass
+        except WrongJsonFormat:
+            pass
+        except Exception as e:
+            raise e
