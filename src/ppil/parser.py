@@ -11,30 +11,28 @@ def _parse_elems_from_string(input_text):
 class Parser(object):
     def __init__(self, input_text):
         self._elems = _parse_elems_from_string(input_text)
-        self._scope = None
+        self._variables = {}
 
     def parse_rules(self):
         rules = []
 
-        while self._elems:
-            self._scope = {}
+        while len(self._elems) > 0:
+            self._variables = {}
             rules.append(self._parse_rule())
 
         return rules
 
     def parse_query(self):
-        self._scope = {}
         return self._parse_term()
 
-    @property
-    def _current(self):
+    def _get_current_elem(self):
         return self._elems[0]
 
-    def _pop_current(self):
+    def _pop_current_elem(self):
         return self._elems.pop(0)
 
     def _parse_atom(self):
-        name = self._pop_current()
+        name = self._pop_current_elem()
 
         if re.match(ATOM_NAME_REGEX, name) is None:
             raise Exception("Invalid Atom Name: " + str(name))
@@ -42,72 +40,78 @@ class Parser(object):
         return name
 
     def _parse_term(self):
-        if self._current == "(":
-            self._pop_current()
-            arguments = self._parse_arguments()
-            return Conjunction(arguments)
+        if self._get_current_elem() == "(":
+            return self._create_list_of_arguments()
 
         functor = self._parse_atom()
 
         if re.match(VARIABLE_REGEX, functor) is not None:
-
-            if functor == "_":
-                return Variable("_")
-
-            variable = self._scope.get(functor)
-
-            if variable is None:
-                self._scope[functor] = Variable(functor)
-                variable = self._scope[functor]
-
-            return variable
-
-        if self._current != "(":
+            return self._get_variable(functor)
+        if self._get_current_elem() != "(":
             return Term(functor)
 
-        self._pop_current()
-        arguments = self._parse_arguments()
-        return Term(functor, arguments)
+        self._pop_current_elem()
+        return Term(functor, self._parse_arguments())
 
     def _parse_arguments(self):
         arguments = []
 
-        while self._current != ")":
+        while self._get_current_elem() != ")":
             arguments.append(self._parse_term())
 
-            if self._current not in (",", ")"):
-                raise Exception("Expected , or ) in term but got " + str(self._current))
+            if self._get_current_elem() not in [",", ")"]:
+                raise Exception("Expected , or ) in term but got " + str(self._get_current_elem()))
 
-            if self._current == ",":
-                self._pop_current()
+            if self._get_current_elem() == ",":
+                self._pop_current_elem()
 
-        self._pop_current()
+        self._pop_current_elem()
         return arguments
 
     def _parse_rule(self):
         head = self._parse_term()
 
-        if self._current == ".":
-            self._pop_current()
+        if self._get_current_elem() == ".":
+            self._pop_current_elem()
             return Rule(head, TRUE())
 
-        if self._current != ":-":
-            raise Exception("Expected :- in rule but got " + str(self._current))
+        if self._get_current_elem() != ":-":
+            raise Exception("Expected :- in rule but got " + str(self._get_current_elem()))
 
-        self._pop_current()
+        self._pop_current_elem()
 
         arguments = []
 
-        while self._current != ".":
+        while self._get_current_elem() != ".":
             arguments.append(self._parse_term())
 
-            if self._current not in (",", "."):
-                raise Exception("Expected , or . in term but got " + str(self._current))
+            if self._get_current_elem() not in [",", "."]:
+                raise Exception("Expected , or . in term but got " + str(self._get_current_elem()))
 
-            if self._current == ",":
-                self._pop_current()
+            if self._get_current_elem() == ",":
+                self._pop_current_elem()
 
-        self._pop_current()
+        self._pop_current_elem()
 
-        tail = arguments[0] if arguments == 1 else Conjunction(arguments)
+        if arguments == 1:
+            tail = arguments[0]
+        else:
+            tail = Conjunction(arguments)
+
         return Rule(head, tail)
+
+    def _get_variable(self, atom):
+        variable = self._variables.get(atom)
+
+        if atom == "_":
+            return Variable("_")
+
+        if variable is None:
+            self._variables[atom] = Variable(atom)
+            variable = self._variables[atom]
+
+        return variable
+
+    def _create_list_of_arguments(self):
+        self._pop_current_elem()
+        return Conjunction(self._parse_arguments())

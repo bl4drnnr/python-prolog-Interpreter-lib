@@ -192,7 +192,7 @@ database = ppil.KnowledgeDatabase(KnowledgeDatabase)
 solution = database.find_solutions(goal)
 ```
 
-Now, you are free to go, use `.find_solutions` method in order to manipulate your database:
+Now, you are free to go, use `.find_solutions` method in order to manipulate your database (referring to example above):
 
 ```python
 assert len(solutions.get("Y")) == 2
@@ -200,6 +200,8 @@ assert len(solutions.get("Y")) == 2
 assert ("jack" in str(solution) for solution in solutions.get("Y"))
 assert ("johnny" in str(solution) for solution in solutions.get("Y"))
 ```
+
+More examples and test you will find in the `tests` folder.
 
 ---
 
