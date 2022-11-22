@@ -25,7 +25,8 @@ class ArgumentsQueryConnector(Term):
         yield from find_solutions(0, {})
 
     def substitute_variable_bindings(self, variable_bindings):
-        return ArgumentsQueryConnector([
-                argument.substitute_variable_bindings(variable_bindings)
-                for argument in self.arguments
-            ])
+        arguments = []
+        for argument in self.arguments:
+            arguments.append(argument.substitute_variable_bindings(variable_bindings))
+
+        return ArgumentsQueryConnector(arguments)

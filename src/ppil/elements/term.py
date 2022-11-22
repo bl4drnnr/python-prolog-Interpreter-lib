@@ -20,17 +20,18 @@ class Term:
 
             zipped_argument_list = list(zip(self.arguments, other_term.arguments))
 
-            matched_argument_var_bindings = [
-                arguments[0].match_variable_bindings(arguments[1])
-                for arguments in zipped_argument_list
-            ]
+            matched_argument_var_bindings = []
+            for arguments in zipped_argument_list:
+                matched_argument_var_bindings.append(arguments[0].match_variable_bindings(arguments[1]))
+
             return reduce(Database.merge_bindings, [{}] + matched_argument_var_bindings)
 
     def substitute_variable_bindings(self, variable_bindings):
-        return Term(self.functor, [
-                argument.substitute_variable_bindings(variable_bindings)
-                for argument in self.arguments
-            ])
+        arguments = []
+        for argument in self.arguments:
+            arguments.append(argument.substitute_variable_bindings(variable_bindings))
+
+        return Term(self.functor, arguments)
 
     def query(self, database):
         yield from database.query(self)

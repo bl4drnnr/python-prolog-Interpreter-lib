@@ -1,5 +1,5 @@
 import re
-from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TRUE, Rule
+from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TrueStatement, Rule
 from .elem_regex import TOKEN_REGEX, ATOM_NAME_REGEX, VARIABLE_REGEX
 
 
@@ -73,7 +73,7 @@ class Parser:
 
         if self._get_current_elem() == ".":
             self._pop_current_elem()
-            return Rule(head, TRUE())
+            return Rule(head, TrueStatement())
 
         if self._get_current_elem() != ":-":
             raise Exception("Expected :- in rule but got " + str(self._get_current_elem()))
