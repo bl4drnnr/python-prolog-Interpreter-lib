@@ -1,7 +1,7 @@
 from .term import Term
 
 
-class TRUE(Term):
+class TrueStatement(Term):
     def __init__(self, functor="TRUE", arguments=None):
         if not arguments:
             arguments = []

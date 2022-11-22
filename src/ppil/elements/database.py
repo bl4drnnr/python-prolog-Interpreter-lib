@@ -25,18 +25,17 @@ class Database:
             merged_bindings[variable] = value
 
         for variable, value in second_bindings_map.items():
-            if variable in merged_bindings:
-                existing_variable_binding = merged_bindings[variable]
-                shared_bindings = existing_variable_binding.match_variable_bindings(value)
+            if variable not in merged_bindings:
+                merged_bindings[variable] = value
 
-                if shared_bindings is not None:
-                    for variable_, value_ in shared_bindings.items():
-                        merged_bindings[variable_] = value_
+            existing_variable_binding = merged_bindings[variable]
+            shared_bindings = existing_variable_binding.match_variable_bindings(value)
 
-                else:
-                    return None
+            if shared_bindings is not None:
+                for variable_, value_ in shared_bindings.items():
+                    merged_bindings[variable_] = value_
 
             else:
-                merged_bindings[variable] = value
+                return None
 
         return merged_bindings

@@ -1,4 +1,4 @@
-from src.ppil import KnowledgeDatabase
+from src.ppil import KnowledgeDatabase, ApiInstance
 
 
 def main():
@@ -22,7 +22,10 @@ def main():
 
     db = KnowledgeDatabase(db_payload)
     solution = db.find_solutions(query)
-    print('solution', solution)
+    print(f'Solution: {solution}')
+
+    api = ApiInstance()
+    api.run()
 
 
 if __name__ == '__main__':

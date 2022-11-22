@@ -1,6 +1,9 @@
 import re
-from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TRUE, Rule
-from .elem_regex import TOKEN_REGEX, ATOM_NAME_REGEX, VARIABLE_REGEX
+from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TrueStatement, Rule
+
+ATOM_NAME_REGEX = r"^[A-Za-z0-9_]+$"
+VARIABLE_REGEX = r"^[A-Z_][A-Za-z0-9_]*$"
+TOKEN_REGEX = r"[A-Za-z0-9_]+|:\-|[()\.,]"
 
 
 def _parse_elems_from_string(input_text):
@@ -73,7 +76,7 @@ class Parser:
 
         if self._get_current_elem() == ".":
             self._pop_current_elem()
-            return Rule(head, TRUE())
+            return Rule(head, TrueStatement())
 
         if self._get_current_elem() != ":-":
             raise Exception("Expected :- in rule but got " + str(self._get_current_elem()))
