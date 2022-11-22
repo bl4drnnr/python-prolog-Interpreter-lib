@@ -1,6 +1,5 @@
 from src.ppil.elements import Variable, Database
 from .parser import Parser
-from collections import defaultdict
 
 
 class KnowledgeDatabase:
