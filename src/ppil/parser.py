@@ -8,7 +8,7 @@ def _parse_elems_from_string(input_text):
     return [token.group() for token in iterator]
 
 
-class Parser(object):
+class Parser:
     def __init__(self, input_text):
         self._elems = _parse_elems_from_string(input_text)
         self._variables = {}

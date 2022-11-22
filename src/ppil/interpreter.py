@@ -1,7 +1,7 @@
 from functools import reduce
 
 
-class Term(object):
+class Term:
     def __init__(self, functor, arguments=None):
         if not arguments:
             arguments = []
@@ -11,6 +11,7 @@ class Term(object):
     def match_variable_bindings(self, other_term):
         if isinstance(other_term, Variable):
             return other_term.match_variable_bindings(self)
+
         if isinstance(other_term, Term):
             if self.functor != other_term.functor or len(self.arguments) != len(other_term.arguments):
                 return None
@@ -59,7 +60,7 @@ class TRUE(Term):
         yield self
 
 
-class Variable(object):
+class Variable:
     def __init__(self, name):
         self.name = name
 
@@ -86,16 +87,10 @@ class Variable(object):
         return str(self)
 
 
-class Rule(object):
+class Rule:
     def __init__(self, head, tail):
         self.head = head
         self.tail = tail
-
-    def __str__(self):
-        return str(self.head) + " :- " + str(self.tail)
-
-    def __repr__(self):
-        return str(self)
 
 
 class Conjunction(Term):
@@ -126,14 +121,8 @@ class Conjunction(Term):
                 for argument in self.arguments
             ])
 
-    def __str__(self):
-        return ", ".join(str(argument) for argument in self.arguments)
 
-    def __repr__(self):
-        return str(self)
-
-
-class Database(object):
+class Database:
     def __init__(self, rules):
         self.rules = rules
 
@@ -175,9 +164,3 @@ class Database(object):
                 merged_bindings[variable] = value
 
         return merged_bindings
-
-    def __str__(self):
-        return ".\n".join(str(rule) for rule in self.rules)
-
-    def __repr__(self):
-        return str(self)
