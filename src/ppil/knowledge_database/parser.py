@@ -1,5 +1,5 @@
 import re
-from .elements import ArgumentsQueryConnector, Variable, Term, TRUE, Rule
+from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TRUE, Rule
 from .elem_regex import TOKEN_REGEX, ATOM_NAME_REGEX, VARIABLE_REGEX
 
 
