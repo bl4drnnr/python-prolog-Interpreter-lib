@@ -1,5 +1,5 @@
 import re
-from .interpreter import Conjunction, Variable, Term, TRUE, Rule
+from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TRUE, Rule
 from .elem_regex import TOKEN_REGEX, ATOM_NAME_REGEX, VARIABLE_REGEX
 
 
@@ -8,7 +8,7 @@ def _parse_elems_from_string(input_text):
     return [token.group() for token in iterator]
 
 
-class Parser(object):
+class Parser:
     def __init__(self, input_text):
         self._elems = _parse_elems_from_string(input_text)
         self._variables = {}
@@ -96,7 +96,7 @@ class Parser(object):
         if arguments == 1:
             tail = arguments[0]
         else:
-            tail = Conjunction(arguments)
+            tail = ArgumentsQueryConnector(arguments)
 
         return Rule(head, tail)
 
@@ -114,4 +114,4 @@ class Parser(object):
 
     def _create_list_of_arguments(self):
         self._pop_current_elem()
-        return Conjunction(self._parse_arguments())
+        return ArgumentsQueryConnector(self._parse_arguments())
