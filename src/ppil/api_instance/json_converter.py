@@ -51,63 +51,79 @@ class JsonConverter:
         return output_program
 
     @classmethod
+    def prolog_to_json(cls, input_json_data):
+        return {}
+
+    @classmethod
+    def json_execute(cls, input_json_data):
+        return {}
+
+    @classmethod
+    def prolog_execute(cls, input_json_data):
+        return {}
+
+    @classmethod
     def _check_json_format(cls, data):
-        predicates = []
-        facts = []
-        lists = []
+        try:
+            predicates = []
+            facts = []
+            lists = []
 
-        for key, value in data.items():
-            if key not in JSON_FORMAT:
-                raise WrongJsonFormat
-            else:
-                for item_key, item_value in value.items():
+            for key, value in data.items():
+                if key not in JSON_FORMAT:
+                    raise WrongJsonFormat
+                else:
+                    for item_key, item_value in value.items():
 
-                    if item_key not in JSON_FORMAT[key]:
-                        raise WrongJsonFormat
-                    if type(item_value).__name__ != JSON_FORMAT[key][item_key]:
-                        raise WrongJsonFormat
-
-                    if item_key == 'name':
-                        if 65 < ord(item_value[0]) < 90 or 65 < ord(item_value[-1]) < 90:
+                        if item_key not in JSON_FORMAT[key]:
+                            raise WrongJsonFormat
+                        if type(item_value).__name__ != JSON_FORMAT[key][item_key]:
                             raise WrongJsonFormat
 
-            if key == 'predicate':
-                predicates.append(value)
+                        if item_key == 'name':
+                            if 65 < ord(item_value[0]) < 90 or 65 < ord(item_value[-1]) < 90:
+                                raise WrongJsonFormat
 
-            elif key == 'fact':
+                if key == 'predicate':
+                    predicates.append(value)
 
-                if len(value['conditions']) == 0:
-                    raise WrongFactFormat
+                elif key == 'fact':
 
-                if 'arguments' not in value or type(value['arguments']).__name__ != 'list':
-                    raise WrongFactFormat
-
-                if \
-                    "joins" not in value or \
-                        type(value['joins']).__name__ != 'list' or \
-                        len(value['joins']) != len(value['conditions']) - 1:
-                    raise WrongFactFormat
-                else:
-                    for joiner in value['joins']:
-                        if joiner.lower() not in ALLOWED_CONDITIONS:
-                            raise WrongFactFormat
-
-                for condition in value['conditions']:
-                    if 'type' not in condition:
+                    if len(value['conditions']) == 0:
                         raise WrongFactFormat
-                    if condition['type'] not in ALLOWED_CONDITIONS_TYPES:
+
+                    if 'arguments' not in value or type(value['arguments']).__name__ != 'list':
                         raise WrongFactFormat
-                    if condition['type'] == 'predicate':
-                        if 'arguments' not in condition or type(condition['arguments']).__name__ != 'list':
+
+                    if \
+                        "joins" not in value or \
+                            type(value['joins']).__name__ != 'list' or \
+                            len(value['joins']) != len(value['conditions']) - 1:
+                        raise WrongFactFormat
+                    else:
+                        for joiner in value['joins']:
+                            if joiner.lower() not in ALLOWED_CONDITIONS:
+                                raise WrongFactFormat
+
+                    for condition in value['conditions']:
+                        if 'type' not in condition:
                             raise WrongFactFormat
+                        if condition['type'] not in ALLOWED_CONDITIONS_TYPES:
+                            raise WrongFactFormat
+                        if condition['type'] == 'predicate':
+                            if 'arguments' not in condition or type(condition['arguments']).__name__ != 'list':
+                                raise WrongFactFormat
 
-                facts.append(value)
+                    facts.append(value)
 
-            elif key == 'list':
-                lists.append(value)
+                elif key == 'list':
+                    lists.append(value)
 
-        return {
-            'predicates': predicates,
-            'facts': facts,
-            'lists': lists
-        }
+            return {
+                'predicates': predicates,
+                'facts': facts,
+                'lists': lists
+            }
+
+        except (Exception,):
+            pass
