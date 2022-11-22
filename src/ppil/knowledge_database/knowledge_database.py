@@ -37,11 +37,12 @@ class KnowledgeDatabase:
         return None
 
     def _create_solution_map(self):
-        solutions_map = defaultdict(list)
+        solutions_map = {}
+
         for matching_query_term in self._matching_query_terms:
             matching_variable_bindings = self._query.match_variable_bindings(matching_query_term)
 
             for variable_name, variable in self._query_variable_map.items():
-                solutions_map[variable_name].append(matching_variable_bindings.get(variable))
+                solutions_map[variable_name] = matching_variable_bindings.get(variable)
 
         return solutions_map

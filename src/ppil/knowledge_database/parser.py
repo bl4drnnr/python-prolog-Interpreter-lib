@@ -1,6 +1,9 @@
 import re
 from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TrueStatement, Rule
-from .elem_regex import TOKEN_REGEX, ATOM_NAME_REGEX, VARIABLE_REGEX
+
+ATOM_NAME_REGEX = r"^[A-Za-z0-9_]+$"
+VARIABLE_REGEX = r"^[A-Z_][A-Za-z0-9_]*$"
+TOKEN_REGEX = r"[A-Za-z0-9_]+|:\-|[()\.,]"
 
 
 def _parse_elems_from_string(input_text):
