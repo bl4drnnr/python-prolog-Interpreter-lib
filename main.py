@@ -25,7 +25,7 @@ def main():
     print(f'Solution: {solution}')
 
     api = ApiInstance()
-    api.run()
+    api.run(debug=True)
 
 
 if __name__ == '__main__':

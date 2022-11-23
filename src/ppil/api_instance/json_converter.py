@@ -1,5 +1,5 @@
 import json
-from .exception_handler import WrongFactFormat, WrongJsonFormat
+from .api_response_handler import WrongFactFormat, WrongJsonFormat, ApiResponse
 
 JSON_FORMAT = {
     "predicate": {
@@ -28,28 +28,35 @@ class JsonConverter:
 
     @classmethod
     def json_to_prolog(cls, input_json_data):
-        output_program = ''
+        try:
+            output_program = ''
 
-        read_data = json.loads(input_json_data)
-        data = cls._check_json_format(read_data)
+            data = cls._check_json_format(input_json_data)
 
-        for predicate in data['predicates']:
-            output_program += f"{predicate['name']}({', '.join(predicate['arguments'])}).\n"
+            for predicate in data.get('predicates'):
+                output_program += f"{predicate.get('name')}({', '.join(predicate.get('arguments'))}).\n"
 
-        for fact in data['facts']:
-            output_program += f"{fact['name']}({', '.join(fact['arguments'])}):-"
-            for index, condition in enumerate(fact['conditions']):
-                if condition['type'] == 'predicate':
-                    output_program += f"{condition['name']}({', '.join(condition['arguments'])})"
-                if len(fact['joins']):
-                    if index + 1 < len(fact['conditions']):
-                        output_program += fact['joins'][index]
-            output_program += '.\n'
+            for fact in data.get('facts'):
+                output_program += f"{fact.get('name')}({', '.join(fact.get('arguments'))}):-"
+                for index, condition in enumerate(fact.get('conditions')):
+                    if condition.get('type') == 'predicate':
+                        output_program += f"{condition.get('name')}({', '.join(condition.get('arguments'))})"
+                    if len(fact.get('joins')):
+                        if index + 1 < len(fact.get('conditions')):
+                            output_program += fact.get('joins')[index]
+                output_program += '.\n'
 
-        for p_list in data['lists']:
-            output_program += f"{p_list['name']}={p_list['items']}"
+            for p_list in data.get('lists'):
+                output_program += f"{p_list.get('name')}={p_list.get('items')}"
 
-        return output_program
+            return ApiResponse(output_program, 200)
+
+        except WrongJsonFormat:
+            return WrongJsonFormat()
+        except WrongFactFormat:
+            return WrongFactFormat()
+        except Exception as e:
+            return ApiResponse(str(e), 500)
 
     @classmethod
     def prolog_to_json(cls, input_json_data):
@@ -64,71 +71,70 @@ class JsonConverter:
         return {}
 
     @classmethod
-    def _check_json_format(cls, data):
+    def _check_prolog_format(cls, data):
         try:
-            predicates = []
-            facts = []
-            lists = []
-
-            for key, value in data.items():
-                if key not in JSON_FORMAT:
-                    raise WrongJsonFormat
-                else:
-                    for item_key, item_value in value.items():
-
-                        if item_key not in JSON_FORMAT[key]:
-                            raise WrongJsonFormat
-                        if type(item_value).__name__ != JSON_FORMAT[key][item_key]:
-                            raise WrongJsonFormat
-
-                        if item_key == 'name':
-                            if 65 < ord(item_value[0]) < 90 or 65 < ord(item_value[-1]) < 90:
-                                raise WrongJsonFormat
-
-                if key == 'predicate':
-                    predicates.append(value)
-
-                elif key == 'fact':
-
-                    if len(value['conditions']) == 0:
-                        raise WrongFactFormat
-
-                    if 'arguments' not in value or type(value['arguments']).__name__ != 'list':
-                        raise WrongFactFormat
-
-                    if \
-                        "joins" not in value or \
-                            type(value['joins']).__name__ != 'list' or \
-                            len(value['joins']) != len(value['conditions']) - 1:
-                        raise WrongFactFormat
-                    else:
-                        for joiner in value['joins']:
-                            if joiner.lower() not in ALLOWED_CONDITIONS:
-                                raise WrongFactFormat
-
-                    for condition in value['conditions']:
-                        if 'type' not in condition:
-                            raise WrongFactFormat
-                        if condition['type'] not in ALLOWED_CONDITIONS_TYPES:
-                            raise WrongFactFormat
-                        if condition['type'] == 'predicate':
-                            if 'arguments' not in condition or type(condition['arguments']).__name__ != 'list':
-                                raise WrongFactFormat
-
-                    facts.append(value)
-
-                elif key == 'list':
-                    lists.append(value)
-
-            return {
-                'predicates': predicates,
-                'facts': facts,
-                'lists': lists
-            }
-
-        except WrongFactFormat:
-            pass
-        except WrongJsonFormat:
             pass
         except Exception as e:
-            raise e
+            return ApiResponse(str(e), 500)
+
+    @classmethod
+    def _check_json_format(cls, data):
+        predicates = []
+        facts = []
+        lists = []
+
+        for key, value in data.items():
+            if key not in JSON_FORMAT:
+                raise WrongJsonFormat()
+            else:
+                for item_key, item_value in value.items():
+
+                    if item_key not in JSON_FORMAT[key]:
+                        raise WrongJsonFormat()
+                    if type(item_value).__name__ != JSON_FORMAT[key][item_key]:
+                        raise WrongJsonFormat()
+
+                    if item_key == 'name':
+                        if 65 < ord(item_value[0]) < 90 or 65 < ord(item_value[-1]) < 90:
+                            raise WrongJsonFormat()
+
+            if key == 'predicate':
+                predicates.append(value)
+
+            elif key == 'fact':
+
+                if value.get('conditions') is None:
+                    raise WrongFactFormat()
+
+                if value.get('arguments') is None or type(value.get('arguments')).__name__ != 'list':
+                    raise WrongFactFormat()
+
+                if \
+                    value.get('joins') is None or \
+                        type(value.get('joins')).__name__ != 'list' or \
+                        len(value.get('joins')) != len(value.get('conditions')) - 1:
+                    raise WrongFactFormat()
+                else:
+                    for joiner in value.get('joins'):
+                        if joiner.lower() not in ALLOWED_CONDITIONS:
+                            raise WrongFactFormat()
+
+                for condition in value.get('conditions'):
+                    if value.get('conditions') is None:
+                        raise WrongFactFormat()
+                    if condition.get('type') not in ALLOWED_CONDITIONS_TYPES:
+                        raise WrongFactFormat()
+                    if condition.get('type') == 'predicate':
+                        if condition.get('arguments') is None or type(condition.get('arguments')).__name__ != 'list':
+                            raise WrongFactFormat()
+
+                facts.append(value)
+
+            elif key == 'list':
+                lists.append(value)
+
+        return {
+            'predicates': predicates,
+            'facts': facts,
+            'lists': lists
+        }
