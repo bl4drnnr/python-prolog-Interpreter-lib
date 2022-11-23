@@ -1,5 +1,5 @@
 import json
-from .exception_handler import WrongFactFormat, WrongJsonFormat
+from .api_response_handler import WrongFactFormat, WrongJsonFormat, ApiResponse
 
 JSON_FORMAT = {
     "predicate": {
@@ -28,28 +28,31 @@ class JsonConverter:
 
     @classmethod
     def json_to_prolog(cls, input_json_data):
-        output_program = ''
+        try:
+            output_program = ''
 
-        read_data = json.loads(input_json_data)
-        data = cls._check_json_format(read_data)
+            read_data = json.loads(input_json_data)
+            data = cls._check_json_format(read_data)
 
-        for predicate in data['predicates']:
-            output_program += f"{predicate['name']}({', '.join(predicate['arguments'])}).\n"
+            for predicate in data['predicates']:
+                output_program += f"{predicate['name']}({', '.join(predicate['arguments'])}).\n"
 
-        for fact in data['facts']:
-            output_program += f"{fact['name']}({', '.join(fact['arguments'])}):-"
-            for index, condition in enumerate(fact['conditions']):
-                if condition['type'] == 'predicate':
-                    output_program += f"{condition['name']}({', '.join(condition['arguments'])})"
-                if len(fact['joins']):
-                    if index + 1 < len(fact['conditions']):
-                        output_program += fact['joins'][index]
-            output_program += '.\n'
+            for fact in data['facts']:
+                output_program += f"{fact['name']}({', '.join(fact['arguments'])}):-"
+                for index, condition in enumerate(fact['conditions']):
+                    if condition['type'] == 'predicate':
+                        output_program += f"{condition['name']}({', '.join(condition['arguments'])})"
+                    if len(fact['joins']):
+                        if index + 1 < len(fact['conditions']):
+                            output_program += fact['joins'][index]
+                output_program += '.\n'
 
-        for p_list in data['lists']:
-            output_program += f"{p_list['name']}={p_list['items']}"
+            for p_list in data['lists']:
+                output_program += f"{p_list['name']}={p_list['items']}"
 
-        return output_program
+            return output_program
+        except Exception as e:
+            return ApiResponse(str(e), 500)
 
     @classmethod
     def prolog_to_json(cls, input_json_data):
@@ -62,6 +65,13 @@ class JsonConverter:
     @classmethod
     def prolog_execute(cls, input_json_data):
         return {}
+
+    @classmethod
+    def _check_prolog_format(cls, data):
+        try:
+            pass
+        except Exception as e:
+            raise Exception(e)
 
     @classmethod
     def _check_json_format(cls, data):
@@ -127,8 +137,10 @@ class JsonConverter:
             }
 
         except WrongFactFormat:
-            pass
+            return ApiResponse("Wrong fact format", 500)
         except WrongJsonFormat:
-            pass
+            return ApiResponse("Wrong JSON format", 500)
         except Exception as e:
-            raise e
+            return ApiResponse(str(e), 500)
+
+

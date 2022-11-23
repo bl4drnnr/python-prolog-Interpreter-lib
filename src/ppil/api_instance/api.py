@@ -23,7 +23,8 @@ class ApiInstance:
 
     def _json_to_prolog(self):
         self._request_data = request.get_json()
-        return JsonConverter.json_to_prolog(self._request_data)
+        response = JsonConverter.json_to_prolog(self._request_data)
+        return response.response, response.status_code
 
     def _json_execute(self):
         self._request_data = request.get_json()
