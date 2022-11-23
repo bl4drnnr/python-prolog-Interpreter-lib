@@ -13,11 +13,13 @@ class WrongOption(ApiResponse):
 
 
 class WrongJsonFormat(ApiResponse):
-    pass
+    def __init__(self, response="Wrong JSON format", status_code=500):
+        super().__init__(response, status_code)
 
 
 class WrongFactFormat(ApiResponse):
-    pass
+    def __init__(self, response="Wrong fact format", status_code=500):
+        super().__init__(response, status_code)
 
 
 class WrongPrologFormat(ApiResponse):

@@ -19,7 +19,8 @@ class ApiInstance:
 
     def _prolog_to_json(self):
         self._request_data = request.get_json()
-        return JsonConverter.prolog_to_json(self._request_data)
+        response = JsonConverter.prolog_to_json(self._request_data)
+        return response.response, response.status_code
 
     def _json_to_prolog(self):
         self._request_data = request.get_json()
@@ -28,11 +29,13 @@ class ApiInstance:
 
     def _json_execute(self):
         self._request_data = request.get_json()
-        return JsonConverter.json_execute(self._request_data)
+        response = JsonConverter.json_execute(self._request_data)
+        return response.response, response.status_code
 
     def _prolog_execute(self):
         self._request_data = request.get_json()
-        return JsonConverter.prolog_execute(self._request_data)
+        response = JsonConverter.prolog_execute(self._request_data)
+        return response.response, response.status_code
 
     def run(self, **kwargs):
         self._app = Flask(__name__)
