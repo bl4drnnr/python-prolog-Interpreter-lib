@@ -33,21 +33,21 @@ class JsonConverter:
 
             data = cls._check_json_format(input_json_data)
 
-            for predicate in data['predicates']:
-                output_program += f"{predicate['name']}({', '.join(predicate['arguments'])}).\n"
+            for predicate in data.get('predicates'):
+                output_program += f"{predicate.get('name')}({', '.join(predicate.get('arguments'))}).\n"
 
-            for fact in data['facts']:
-                output_program += f"{fact['name']}({', '.join(fact['arguments'])}):-"
-                for index, condition in enumerate(fact['conditions']):
-                    if condition['type'] == 'predicate':
-                        output_program += f"{condition['name']}({', '.join(condition['arguments'])})"
-                    if len(fact['joins']):
-                        if index + 1 < len(fact['conditions']):
-                            output_program += fact['joins'][index]
+            for fact in data.get('facts'):
+                output_program += f"{fact.get('name')}({', '.join(fact.get('arguments'))}):-"
+                for index, condition in enumerate(fact.get('conditions')):
+                    if condition.get('type') == 'predicate':
+                        output_program += f"{condition.get('name')}({', '.join(condition.get('arguments'))})"
+                    if len(fact.get('joins')):
+                        if index + 1 < len(fact.get('conditions')):
+                            output_program += fact.get('joins')[index]
                 output_program += '.\n'
 
-            for p_list in data['lists']:
-                output_program += f"{p_list['name']}={p_list['items']}"
+            for p_list in data.get('lists'):
+                output_program += f"{p_list.get('name')}={p_list.get('items')}"
 
             return ApiResponse(output_program, 200)
 
@@ -103,29 +103,29 @@ class JsonConverter:
 
             elif key == 'fact':
 
-                if 'conditions' not in value:
+                if value.get('conditions') is None:
                     raise WrongFactFormat()
 
-                if 'arguments' not in value or type(value['arguments']).__name__ != 'list':
+                if value.get('arguments') is None or type(value.get('arguments')).__name__ != 'list':
                     raise WrongFactFormat()
 
                 if \
-                    "joins" not in value or \
-                        type(value['joins']).__name__ != 'list' or \
-                        len(value['joins']) != len(value['conditions']) - 1:
+                    value.get('joins') is None or \
+                        type(value.get('joins')).__name__ != 'list' or \
+                        len(value.get('joins')) != len(value.get('conditions')) - 1:
                     raise WrongFactFormat()
                 else:
-                    for joiner in value['joins']:
+                    for joiner in value.get('joins'):
                         if joiner.lower() not in ALLOWED_CONDITIONS:
                             raise WrongFactFormat()
 
-                for condition in value['conditions']:
-                    if 'type' not in condition:
+                for condition in value.get('conditions'):
+                    if value.get('conditions') is None:
                         raise WrongFactFormat()
-                    if condition['type'] not in ALLOWED_CONDITIONS_TYPES:
+                    if condition.get('type') not in ALLOWED_CONDITIONS_TYPES:
                         raise WrongFactFormat()
-                    if condition['type'] == 'predicate':
-                        if 'arguments' not in condition or type(condition['arguments']).__name__ != 'list':
+                    if condition.get('type') == 'predicate':
+                        if condition.get('arguments') is None or type(condition.get('arguments')).__name__ != 'list':
                             raise WrongFactFormat()
 
                 facts.append(value)
