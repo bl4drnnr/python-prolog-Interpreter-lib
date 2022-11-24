@@ -1,4 +1,4 @@
-from src.ppil import KnowledgeDatabase
+from ppil import KnowledgeDatabase
 
 
 def test_simple_goal_query():

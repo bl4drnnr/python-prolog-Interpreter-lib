@@ -3,5 +3,5 @@ venv
 .DS_Store
 __pycache__
 dist/
-src/ppil.egg-info
+ppil/ppil.egg-info
 test.py
