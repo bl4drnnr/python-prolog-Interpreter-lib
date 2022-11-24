@@ -1,1 +1,1 @@
-from .api import ApiInstance
+from .api_instance import ApiInstance

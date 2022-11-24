@@ -1,5 +1,5 @@
-from .variable import Variable
-from .database import Database
+from ._variable import Variable
+from ._database import Database
 from functools import reduce
 
 

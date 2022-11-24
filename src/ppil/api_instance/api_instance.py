@@ -1,7 +1,6 @@
 from flask import Flask, request
-from .converter import Converter
-
-AVAILABLE_ENDPOINTS = ['prolog-to-json', 'json-to-prolog', 'json-execute', 'prolog-execute']
+from ._converter import Converter
+from._variables import AVAILABLE_ENDPOINTS
 
 
 class ApiInstance:
