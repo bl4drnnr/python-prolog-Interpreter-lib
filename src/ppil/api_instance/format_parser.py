@@ -23,14 +23,13 @@ ALLOWED_CONDITIONS_TYPES = ['predicate', 'condition']
 
 class FormatParser:
     def __init__(self):
-        pass
+        self._parsed_data = {
+            'predicates': [],
+            'facts': [],
+            'lists': []
+        }
 
-    @staticmethod
-    def check_json_format(data):
-        predicates = []
-        facts = []
-        lists = []
-
+    def check_json_format(self, data):
         for key, value in data.items():
             if key not in JSON_FORMAT:
                 raise WrongJsonFormat()
@@ -47,7 +46,7 @@ class FormatParser:
                             raise WrongJsonFormat()
 
             if key == 'predicate':
-                predicates.append(value)
+                self._parsed_data['predicates'].append(value)
 
             elif key == 'fact':
 
@@ -58,9 +57,9 @@ class FormatParser:
                     raise WrongFactFormat()
 
                 if \
-                        value.get('joins') is None or \
-                                type(value.get('joins')).__name__ != 'list' or \
-                                len(value.get('joins')) != len(value.get('conditions')) - 1:
+                    value.get('joins') is None or \
+                        type(value.get('joins')).__name__ != 'list' or \
+                        len(value.get('joins')) != len(value.get('conditions')) - 1:
                     raise WrongFactFormat()
                 else:
                     for joiner in value.get('joins'):
@@ -80,17 +79,13 @@ class FormatParser:
                         if condition.get('value') is None or type(condition.get('value')).__name__ != 'str':
                             raise WrongFactFormat()
 
-                facts.append(value)
+                self._parsed_data['facts'].append(value)
 
             elif key == 'list':
-                lists.append(value)
+                self._parsed_data['lists'].append(value)
 
-        return {
-            'predicates': predicates,
-            'facts': facts,
-            'lists': lists
-        }
+        return self._parsed_data
 
-    @staticmethod
-    def check_prolog_format(data):
-        pass
+    def check_prolog_format(self, data):
+        return self._parsed_data
+

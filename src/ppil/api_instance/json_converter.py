@@ -5,10 +5,11 @@ from .format_parser import FormatParser
 class JsonConverter:
     def __init__(self):
         self._output_program = ''
+        self._format_parses = FormatParser()
 
     def json_to_prolog(self, input_json_data):
         try:
-            data = FormatParser.check_json_format(input_json_data)
+            data = self._format_parses.check_json_format(input_json_data)
 
             self._parse_predicates(data.get('predicates'))
             self._parse_facts(data.get('facts'))
