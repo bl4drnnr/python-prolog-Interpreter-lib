@@ -1,5 +1,5 @@
 from flask import Flask, request
-from .json_converter import JsonConverter
+from .converter import Converter
 
 AVAILABLE_ENDPOINTS = ['prolog-to-json', 'json-to-prolog', 'json-execute', 'prolog-execute']
 
@@ -44,5 +44,5 @@ class ApiInstance:
         for endpoint in AVAILABLE_ENDPOINTS:
             self._add_endpoint(f'/{endpoint}', endpoint, eval(f'self._{endpoint.replace("-", "_")}'), methods=['POST'])
 
-        self._converter = JsonConverter()
+        self._converter = Converter()
         self._app.run(**kwargs)

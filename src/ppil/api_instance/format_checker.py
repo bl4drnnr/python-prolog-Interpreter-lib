@@ -21,7 +21,7 @@ ALLOWED_CONDITIONS = ['and', ',', 'or', ';']
 ALLOWED_CONDITIONS_TYPES = ['predicate', 'condition']
 
 
-class FormatParser:
+class FormatChecker:
     def __init__(self):
         self._parsed_data = {
             'predicates': [],
