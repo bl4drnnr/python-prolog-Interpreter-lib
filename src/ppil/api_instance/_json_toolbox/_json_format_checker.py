@@ -1,8 +1,8 @@
-from ._api_response_handler import WrongFactFormat, WrongJsonFormat
-from ._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, ALLOWED_CONDITIONS, CONDITION_SEPARATORS
+from src.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
+from src.ppil.api_instance._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, ALLOWED_CONDITIONS, CONDITION_SEPARATORS
 
 
-class FormatChecker:
+class JsonFormatChecker:
     def __init__(self):
         self._parsed_data = {
             'predicates': [],
@@ -66,7 +66,3 @@ class FormatChecker:
                 self._parsed_data['lists'].append(value)
 
         return self._parsed_data
-
-    def check_prolog_format(self, data):
-        return self._parsed_data
-
