@@ -2,11 +2,14 @@ from .api_response_handler import WrongFactFormat, WrongJsonFormat, WrongPrologF
 from .format_checker import FormatChecker
 from .json_parser import JsonParser
 from .prolog_parser import PrologParser
+from .executor import Executor
 
 
 class Converter:
     def __init__(self):
         self._output_program = None
+        self._execute_result = None
+
         self._format_checker = FormatChecker()
         self._json_parser = JsonParser()
         self._prolog_parser = PrologParser()
@@ -37,12 +40,19 @@ class Converter:
 
     def json_execute(self, input_json_data):
         try:
-            return ApiResponse(self._output_program, 200)
+            json_data = self._format_checker.check_json_format(input_json_data)
+            prolog_data = self._json_parser.parse_json(json_data)
+            self._execute_result = Executor.execute_code(prolog_data)
+
+            return ApiResponse(self._execute_result, 200)
         except Exception as e:
             return ApiResponse(str(e), 500)
 
     def prolog_execute(self, input_prolog_data):
         try:
-            return ApiResponse(self._output_program, 200)
+            prolog_data = self._format_checker.check_prolog_format(input_prolog_data)
+            self._execute_result = Executor.execute_code(prolog_data)
+
+            return ApiResponse(self._execute_result, 200)
         except Exception as e:
             return ApiResponse(str(e), 500)
