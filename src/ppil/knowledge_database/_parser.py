@@ -1,5 +1,5 @@
 import re
-from src.ppil.elements import ArgumentsQueryConnector, Variable, Term, TrueStatement, Rule
+from ._elements import ArgumentsQueryConnector, Variable, Term, TrueStatement, Rule
 
 ATOM_NAME_REGEX = r"^[A-Za-z0-9_]+$"
 VARIABLE_REGEX = r"^[A-Z_][A-Za-z0-9_]*$"

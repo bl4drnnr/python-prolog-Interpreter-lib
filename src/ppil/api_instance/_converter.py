@@ -1,8 +1,8 @@
-from .api_response_handler import WrongFactFormat, WrongJsonFormat, WrongPrologFormat, ApiResponse
-from .format_checker import FormatChecker
-from .json_parser import JsonParser
-from .prolog_parser import PrologParser
-from .executor import Executor
+from ._api_response_handler import WrongFactFormat, WrongJsonFormat, WrongPrologFormat, ApiResponse
+from ._format_checker import FormatChecker
+from ._json_parser import JsonParser
+from ._prolog_parser import PrologParser
+from ._executor import Executor
 
 
 class Converter:
@@ -18,6 +18,9 @@ class Converter:
         try:
             json_data = self._format_checker.check_json_format(input_json_data)
             self._output_program = self._json_parser.parse_json(json_data)
+            print('self._output_program')
+            print(self._output_program)
+            print('--------------------')
 
             return ApiResponse(self._output_program, 200)
         except WrongJsonFormat:

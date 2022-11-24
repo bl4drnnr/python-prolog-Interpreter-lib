@@ -1,5 +1,5 @@
-from src.ppil.elements import Variable, Database
-from .parser import Parser
+from ._elements import Variable, Database
+from ._parser import Parser
 
 
 class KnowledgeDatabase:

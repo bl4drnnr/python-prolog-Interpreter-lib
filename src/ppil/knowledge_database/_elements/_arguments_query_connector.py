@@ -1,5 +1,5 @@
-from .database import Database
-from .term import Term
+from ._database import Database
+from ._term import Term
 
 
 class ArgumentsQueryConnector(Term):

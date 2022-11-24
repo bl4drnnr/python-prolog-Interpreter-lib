@@ -1,24 +1,5 @@
-from .api_response_handler import WrongFactFormat, WrongJsonFormat
-
-JSON_FORMAT = {
-    "predicate": {
-        "name": "str",
-        "arguments": "list"
-    },
-    "fact": {
-        "name": "str",
-        "arguments": "list",
-        "conditions": "list",
-        "joins": "list"
-    },
-    "list": {
-        "name": "str",
-        "items": "list"
-    }
-}
-
-ALLOWED_CONDITIONS = ['and', ',', 'or', ';']
-ALLOWED_CONDITIONS_TYPES = ['predicate', 'condition']
+from ._api_response_handler import WrongFactFormat, WrongJsonFormat
+from ._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, ALLOWED_CONDITIONS, CONDITION_SEPARATORS
 
 
 class FormatChecker:

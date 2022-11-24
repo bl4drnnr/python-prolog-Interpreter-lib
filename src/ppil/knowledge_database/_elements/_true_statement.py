@@ -1,4 +1,4 @@
-from .term import Term
+from ._term import Term
 
 
 class TrueStatement(Term):
