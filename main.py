@@ -1,4 +1,4 @@
-from src.ppil import KnowledgeDatabase, ApiInstance
+from ppil import KnowledgeDatabase, ApiInstance
 
 
 def main():

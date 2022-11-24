@@ -1,5 +1,19 @@
-from src.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
-from src.ppil.api_instance._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, ALLOWED_CONDITIONS, CONDITION_SEPARATORS
+from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
+from ppil.ppil.api_instance._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, ALLOWED_CONDITIONS, CONDITION_SEPARATORS
+
+
+def _check_item_format(key, value):
+    if key not in JSON_FORMAT:
+        raise WrongJsonFormat(response="Wrong element name")
+
+    for item_key, item_value in value.items():
+
+        if item_key not in JSON_FORMAT[key] or type(item_value).__name__ != JSON_FORMAT[key][item_key]:
+            raise WrongJsonFormat()
+
+        if item_key == 'name':
+            if 65 < ord(item_value[0]) < 90 or 65 < ord(item_value[-1]) < 90:
+                raise WrongJsonFormat()
 
 
 class JsonFormatChecker:
@@ -12,19 +26,7 @@ class JsonFormatChecker:
 
     def check_json_format(self, data):
         for key, value in data.items():
-            if key not in JSON_FORMAT:
-                raise WrongJsonFormat()
-            else:
-                for item_key, item_value in value.items():
-
-                    if item_key not in JSON_FORMAT[key]:
-                        raise WrongJsonFormat()
-                    if type(item_value).__name__ != JSON_FORMAT[key][item_key]:
-                        raise WrongJsonFormat()
-
-                    if item_key == 'name':
-                        if 65 < ord(item_value[0]) < 90 or 65 < ord(item_value[-1]) < 90:
-                            raise WrongJsonFormat()
+            _check_item_format(key, value)
 
             if key == 'predicate':
                 self._check_predicate(value)
@@ -74,3 +76,4 @@ class JsonFormatChecker:
 
     def _check_list(self, p_list):
         self._parsed_data['lists'].append(p_list)
+

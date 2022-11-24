@@ -1,5 +1,5 @@
 import requests
-from src.ppil import ApiInstance
+from ppil import ApiInstance
 
 
 def test_prolog_to_json():

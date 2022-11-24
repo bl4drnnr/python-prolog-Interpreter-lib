@@ -1,6 +1,6 @@
 from flask import Flask, request
 from ._converter import Converter
-from._variables import AVAILABLE_ENDPOINTS
+from ._variables import AVAILABLE_ENDPOINTS
 
 
 class ApiInstance:
