@@ -18,9 +18,6 @@ class Converter:
         try:
             json_data = self._format_checker.check_json_format(input_json_data)
             self._output_program = self._json_parser.parse_json(json_data)
-            print('self._output_program')
-            print(self._output_program)
-            print('--------------------')
 
             return ApiResponse(self._output_program, 200)
         except WrongJsonFormat:
