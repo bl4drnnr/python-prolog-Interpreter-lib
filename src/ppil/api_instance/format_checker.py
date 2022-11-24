@@ -1,5 +1,4 @@
-import json
-from .api_response_handler import WrongFactFormat, WrongJsonFormat, ApiResponse
+from .api_response_handler import WrongFactFormat, WrongJsonFormat
 
 JSON_FORMAT = {
     "predicate": {
@@ -19,70 +18,18 @@ JSON_FORMAT = {
 }
 
 ALLOWED_CONDITIONS = ['and', ',', 'or', ';']
-ALLOWED_CONDITIONS_TYPES = ['predicate']
+ALLOWED_CONDITIONS_TYPES = ['predicate', 'condition']
 
 
-class JsonConverter:
+class FormatChecker:
     def __init__(self):
-        pass
+        self._parsed_data = {
+            'predicates': [],
+            'facts': [],
+            'lists': []
+        }
 
-    @classmethod
-    def json_to_prolog(cls, input_json_data):
-        try:
-            output_program = ''
-
-            data = cls._check_json_format(input_json_data)
-
-            for predicate in data.get('predicates'):
-                output_program += f"{predicate.get('name')}({', '.join(predicate.get('arguments'))}).\n"
-
-            for fact in data.get('facts'):
-                output_program += f"{fact.get('name')}({', '.join(fact.get('arguments'))}):-"
-                for index, condition in enumerate(fact.get('conditions')):
-                    if condition.get('type') == 'predicate':
-                        output_program += f"{condition.get('name')}({', '.join(condition.get('arguments'))})"
-                    if len(fact.get('joins')):
-                        if index + 1 < len(fact.get('conditions')):
-                            output_program += fact.get('joins')[index]
-                output_program += '.\n'
-
-            for p_list in data.get('lists'):
-                output_program += f"{p_list.get('name')}={p_list.get('items')}"
-
-            return ApiResponse(output_program, 200)
-
-        except WrongJsonFormat:
-            return WrongJsonFormat()
-        except WrongFactFormat:
-            return WrongFactFormat()
-        except Exception as e:
-            return ApiResponse(str(e), 500)
-
-    @classmethod
-    def prolog_to_json(cls, input_json_data):
-        return {}
-
-    @classmethod
-    def json_execute(cls, input_json_data):
-        return {}
-
-    @classmethod
-    def prolog_execute(cls, input_json_data):
-        return {}
-
-    @classmethod
-    def _check_prolog_format(cls, data):
-        try:
-            pass
-        except Exception as e:
-            return ApiResponse(str(e), 500)
-
-    @classmethod
-    def _check_json_format(cls, data):
-        predicates = []
-        facts = []
-        lists = []
-
+    def check_json_format(self, data):
         for key, value in data.items():
             if key not in JSON_FORMAT:
                 raise WrongJsonFormat()
@@ -99,7 +46,7 @@ class JsonConverter:
                             raise WrongJsonFormat()
 
             if key == 'predicate':
-                predicates.append(value)
+                self._parsed_data['predicates'].append(value)
 
             elif key == 'fact':
 
@@ -122,19 +69,23 @@ class JsonConverter:
                 for condition in value.get('conditions'):
                     if value.get('conditions') is None:
                         raise WrongFactFormat()
+
                     if condition.get('type') not in ALLOWED_CONDITIONS_TYPES:
                         raise WrongFactFormat()
                     if condition.get('type') == 'predicate':
                         if condition.get('arguments') is None or type(condition.get('arguments')).__name__ != 'list':
                             raise WrongFactFormat()
+                    if condition.get('type') == 'condition':
+                        if condition.get('value') is None or type(condition.get('value')).__name__ != 'str':
+                            raise WrongFactFormat()
 
-                facts.append(value)
+                self._parsed_data['facts'].append(value)
 
             elif key == 'list':
-                lists.append(value)
+                self._parsed_data['lists'].append(value)
 
-        return {
-            'predicates': predicates,
-            'facts': facts,
-            'lists': lists
-        }
+        return self._parsed_data
+
+    def check_prolog_format(self, data):
+        return self._parsed_data
+

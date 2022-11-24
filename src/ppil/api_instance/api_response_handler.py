@@ -4,14 +4,6 @@ class ApiResponse(Exception):
         self.status_code = status_code
 
 
-class SingleArgument(ApiResponse):
-    pass
-
-
-class WrongOption(ApiResponse):
-    pass
-
-
 class WrongJsonFormat(ApiResponse):
     def __init__(self, response="Wrong JSON format", status_code=500):
         super().__init__(response, status_code)
@@ -23,4 +15,5 @@ class WrongFactFormat(ApiResponse):
 
 
 class WrongPrologFormat(ApiResponse):
-    pass
+    def __init__(self, response="Wrong PROLOG format", status_code=500):
+        super().__init__(response, status_code)
