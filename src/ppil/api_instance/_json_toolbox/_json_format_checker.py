@@ -27,42 +27,50 @@ class JsonFormatChecker:
                             raise WrongJsonFormat()
 
             if key == 'predicate':
-                self._parsed_data['predicates'].append(value)
+                self._check_predicate(value)
 
             elif key == 'fact':
-
-                if value.get('conditions') is None:
-                    raise WrongFactFormat()
-
-                if value.get('arguments') is None or type(value.get('arguments')).__name__ != 'list':
-                    raise WrongFactFormat()
-
-                if \
-                    value.get('joins') is None or \
-                        type(value.get('joins')).__name__ != 'list' or \
-                        len(value.get('joins')) != len(value.get('conditions')) - 1:
-                    raise WrongFactFormat()
-                else:
-                    for joiner in value.get('joins'):
-                        if joiner.lower() not in ALLOWED_CONDITIONS:
-                            raise WrongFactFormat()
-
-                for condition in value.get('conditions'):
-                    if value.get('conditions') is None:
-                        raise WrongFactFormat()
-
-                    if condition.get('type') not in ALLOWED_CONDITIONS_TYPES:
-                        raise WrongFactFormat()
-                    if condition.get('type') == 'predicate':
-                        if condition.get('arguments') is None or type(condition.get('arguments')).__name__ != 'list':
-                            raise WrongFactFormat()
-                    if condition.get('type') == 'condition':
-                        if condition.get('value') is None or type(condition.get('value')).__name__ != 'str':
-                            raise WrongFactFormat()
-
-                self._parsed_data['facts'].append(value)
+                self._check_fact(value)
 
             elif key == 'list':
-                self._parsed_data['lists'].append(value)
+                self._check_list(value)
 
         return self._parsed_data
+
+    def _check_predicate(self, predicate):
+        self._parsed_data['predicates'].append(predicate)
+
+    def _check_fact(self, fact):
+        if fact.get('conditions') is None:
+            raise WrongFactFormat()
+
+        if fact.get('arguments') is None or type(fact.get('arguments')).__name__ != 'list':
+            raise WrongFactFormat()
+
+        if \
+            fact.get('joins') is None or \
+                type(fact.get('joins')).__name__ != 'list' or \
+                len(fact.get('joins')) != len(fact.get('conditions')) - 1:
+            raise WrongFactFormat()
+        else:
+            for joiner in fact.get('joins'):
+                if joiner.lower() not in ALLOWED_CONDITIONS:
+                    raise WrongFactFormat()
+
+        for condition in fact.get('conditions'):
+            if fact.get('conditions') is None:
+                raise WrongFactFormat()
+
+            if condition.get('type') not in ALLOWED_CONDITIONS_TYPES:
+                raise WrongFactFormat()
+            if condition.get('type') == 'predicate':
+                if condition.get('arguments') is None or type(condition.get('arguments')).__name__ != 'list':
+                    raise WrongFactFormat()
+            if condition.get('type') == 'condition':
+                if condition.get('value') is None or type(condition.get('value')).__name__ != 'str':
+                    raise WrongFactFormat()
+
+        self._parsed_data['facts'].append(fact)
+
+    def _check_list(self, p_list):
+        self._parsed_data['lists'].append(p_list)
