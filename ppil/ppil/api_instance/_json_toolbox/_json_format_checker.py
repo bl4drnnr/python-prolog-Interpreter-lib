@@ -1,5 +1,5 @@
-from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
-from ppil.ppil.api_instance._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, ALLOWED_CONDITIONS
+from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat, WrongConditionFormat
+from ppil.ppil.api_instance._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, CONDITION_SEPARATORS
 from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Condition
 
 
@@ -16,36 +16,39 @@ class JsonFormatChecker:
         return self._parsed_data
 
     def _check_items_format(self, data):
-        try:
-            for key, value in data.items():
-                if key not in JSON_FORMAT:
-                    raise WrongJsonFormat(response=f"Wrong element name {key}")
+        for key, value in data.items():
+            if key not in JSON_FORMAT:
+                raise WrongJsonFormat(response=f"Wrong element name {key}")
 
-                if key == 'predicate':
-                    self._parsed_data['predicates'].append(Predicate(value.get('name'), value.get('arguments')))
+            if key == 'predicate':
+                self._parsed_data['predicates'].append(Predicate(value.get('name'), value.get('arguments')))
 
-                elif key == 'fact':
-                    conditions = []
+            elif key == 'fact':
+                conditions = []
 
-                    for con in value.get('conditions'):
-                        if con.get('type') not in ALLOWED_CONDITIONS_TYPES:
-                            raise WrongFactFormat(response=f"Wrong format of condition: {con}")
+                for con in value.get('conditions'):
+                    if con.get('type') not in ALLOWED_CONDITIONS_TYPES:
+                        raise WrongFactFormat(response=f"Wrong format of condition: {con}")
 
-                        if con.get('type') == 'predicate':
-                            conditions.append(Predicate(con['name'], con['arguments']))
-                        elif con.get('type') == 'condition':
-                            conditions.append(Condition(con['value']))
+                    if con.get('type') == 'predicate':
+                        conditions.append(Predicate(con['name'], con['arguments']))
+                    elif con.get('type') == 'condition':
+                        wrong_condition = None
 
-                    self._parsed_data['facts'].append(Fact(
-                        value.get('name'),
-                        value.get('arguments'),
-                        value.get('joins'),
-                        conditions
-                    ))
+                        for condition_sep in CONDITION_SEPARATORS:
+                            wrong_condition = con['value']
+                            if condition_sep in con['value']:
+                                conditions.append(Condition(con['value']))
 
-                elif key == 'list':
-                    self._parsed_data['lists'].append(PList(value.get('name'), value.get('items')))
+                        if wrong_condition is not None:
+                            raise WrongConditionFormat(response=f"Wrong condition {wrong_condition}")
 
-        except Exception as e:
-            raise e
+                self._parsed_data['facts'].append(Fact(
+                    value.get('name'),
+                    value.get('arguments'),
+                    value.get('joins'),
+                    conditions
+                ))
 
+            elif key == 'list':
+                self._parsed_data['lists'].append(PList(value.get('name'), value.get('items')))
