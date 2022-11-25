@@ -4,22 +4,22 @@ class JsonParser:
 
     def _parse_json_predicates(self, predicates):
         for predicate in predicates:
-            self._output_program += f"{predicate.get('name')}({', '.join(predicate.get('arguments'))}).\n"
+            self._output_program += f"{predicate.name}({', '.join(predicate.arguments)}).\n"
 
     def _parse_json_facts(self, facts):
         for fact in facts:
-            self._output_program += f"{fact.get('name')}({', '.join(fact.get('arguments'))}):-"
-            for index, condition in enumerate(fact.get('conditions')):
-                if condition.get('type') == 'predicate':
-                    self._output_program += f"{condition.get('name')}({', '.join(condition.get('arguments'))})"
-                if len(fact.get('joins')):
-                    if index + 1 < len(fact.get('conditions')):
-                        self._output_program += fact.get('joins')[index]
+            self._output_program += f"{fact.name}({', '.join(fact.arguments)}):-"
+            for index, condition in enumerate(fact.conditions):
+                if condition.type == 'predicate':
+                    self._output_program += f"{condition.name}({', '.join(condition.arguments)})"
+                if len(fact.joins):
+                    if index + 1 < len(fact.conditions):
+                        self._output_program += fact.joins[index]
             self._output_program += '.\n'
 
     def _parse_json_lists(self, lists):
         for p_list in lists:
-            self._output_program += f"{p_list.get('name')}={p_list.get('items')}"
+            self._output_program += f"{p_list.name}={p_list.items}.\n"
 
     def parse_json(self, json):
         self._parse_json_predicates(json.get('predicates'))
