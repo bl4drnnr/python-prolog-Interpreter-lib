@@ -1,5 +1,5 @@
 from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat, WrongConditionFormat
-from ppil.ppil.api_instance._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, CONDITION_SEPARATORS
+from ppil.ppil.api_instance._variables import JSON_FORMAT_KEYS, ALLOWED_CONDITIONS_TYPES, CONDITION_SEPARATORS
 from ppil.ppil.api_instance.elements import Predicate, Fact, Condition, PList
 
 
@@ -29,18 +29,28 @@ class JsonFormatChecker:
         return self._parsed_data
 
     def _check_items_format(self, data):
-        for key, value in data.items():
-            if key not in JSON_FORMAT:
-                raise WrongJsonFormat(response=f"Wrong element name: {key}")
+        if not data.get('data'):
+            raise WrongJsonFormat(response="There no 'data' body.")
 
-            if key == 'predicate':
-                predicate_arguments = parse_predicate_arguments(value.get('arguments'))
-                self._parsed_data['predicates'].append(Predicate(value.get('name'), predicate_arguments))
+        data = data['data']
 
-            elif key == 'fact':
+        for item in data:
+            if item.get('item') is None or item.get('body') is None:
+                raise WrongJsonFormat(response=f"Wrong item format {str(item)}")
+
+            if item.get('item') not in JSON_FORMAT_KEYS:
+                raise WrongJsonFormat(response=f"Wrong element name: {str(item)}")
+
+            item_body = item.get('body')
+
+            if item.get('item') == 'predicate':
+                predicate_arguments = parse_predicate_arguments(item_body.get('arguments'))
+                self._parsed_data['predicates'].append(Predicate(item_body.get('name'), predicate_arguments))
+
+            elif item.get('item') == 'fact':
                 fact_conditions = []
 
-                for con in value.get('conditions'):
+                for con in item_body.get('conditions'):
                     if con.get('type') not in ALLOWED_CONDITIONS_TYPES:
                         raise WrongFactFormat(response=f"Wrong format of condition: {con}")
 
@@ -59,8 +69,8 @@ class JsonFormatChecker:
                         ))
 
                 self._parsed_data['facts'].append(Fact(
-                    value.get('name'),
-                    value.get('arguments'),
-                    value.get('joins'),
+                    item_body.get('name'),
+                    item_body.get('arguments'),
+                    item_body.get('joins'),
                     fact_conditions
                 ))
