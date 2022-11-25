@@ -1,6 +1,6 @@
 from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat, WrongConditionFormat
 from ppil.ppil.api_instance._variables import JSON_FORMAT, ALLOWED_CONDITIONS_TYPES, CONDITION_SEPARATORS
-from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Condition
+from ppil.ppil.api_instance.elements import Predicate, Fact, Condition, PList
 
 
 class JsonFormatChecker:
@@ -21,7 +21,15 @@ class JsonFormatChecker:
                 raise WrongJsonFormat(response=f"Wrong element name: {key}")
 
             if key == 'predicate':
-                self._parsed_data['predicates'].append(Predicate(value.get('name'), value.get('arguments')))
+                predicate_arguments = []
+
+                for arg in value.get('arguments'):
+                    if isinstance(arg, str):
+                        predicate_arguments.append(arg)
+                    elif arg.get('type') == 'list':
+                        predicate_arguments.append(PList(arg.get('items')))
+
+                self._parsed_data['predicates'].append(Predicate(value.get('name'), predicate_arguments))
 
             elif key == 'fact':
                 fact_conditions = []
@@ -49,6 +57,3 @@ class JsonFormatChecker:
                     value.get('joins'),
                     fact_conditions
                 ))
-
-            elif key == 'list':
-                self._parsed_data['lists'].append(PList(value.get('name'), value.get('items')))
