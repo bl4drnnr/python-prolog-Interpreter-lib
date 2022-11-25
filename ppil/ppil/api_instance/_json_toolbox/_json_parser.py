@@ -1,20 +1,25 @@
 from ppil.ppil.api_instance.elements import PList
 
 
+def parse_predicate_arguments(arguments):
+    predicate_arguments = ""
+
+    for arg in arguments:
+        if isinstance(arg, str):
+            predicate_arguments += f"{arg}, "
+        elif isinstance(arg, PList):
+            predicate_arguments += f"{str(arg.items)}, "
+
+    return predicate_arguments
+
+
 class JsonParser:
     def __init__(self):
         self._output_program = ''
 
     def _parse_json_predicates(self, predicates):
         for predicate in predicates:
-            predicate_arguments = ""
-
-            for arg in predicate.arguments:
-                if isinstance(arg, str):
-                    predicate_arguments += f"{arg}, "
-                elif isinstance(arg, PList):
-                    predicate_arguments += f"{str(arg.items)}, "
-
+            predicate_arguments = parse_predicate_arguments(predicate.arguments)
             self._output_program += f"{predicate.name}({predicate_arguments[:-2]}).\n"
 
     def _parse_json_facts(self, facts):
@@ -23,7 +28,8 @@ class JsonParser:
 
             for index, condition in enumerate(fact.conditions):
                 if condition.type == 'predicate':
-                    self._output_program += f"{condition.name}({', '.join(condition.arguments)})"
+                    condition_arguments = parse_predicate_arguments(condition.arguments)
+                    self._output_program += f"{condition.name}({condition_arguments[:-2]})"
 
                 if condition.type == 'condition':
                     self._output_program += f"{condition.left_side} {condition.separator} {condition.right_side}"
