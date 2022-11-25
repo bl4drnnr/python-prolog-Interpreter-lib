@@ -3,11 +3,11 @@ from ._elements import ArgumentsQueryConnector, Variable, Term, TrueStatement, R
 
 ATOM_NAME_REGEX = r"^[A-Za-z0-9_]+$"
 VARIABLE_REGEX = r"^[A-Z_][A-Za-z0-9_]*$"
-TOKEN_REGEX = r"[A-Za-z0-9_]+|:\-|[()\.,]"
+ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[()\.,]"
 
 
 def _parse_elems_from_string(input_text):
-    iterator = re.finditer(TOKEN_REGEX, input_text)
+    iterator = re.finditer(ATOM_REGEX, input_text)
     return [token.group() for token in iterator]
 
 
