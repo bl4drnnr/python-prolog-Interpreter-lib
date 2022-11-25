@@ -17,3 +17,13 @@ class WrongFactFormat(ApiResponse):
 class WrongPrologFormat(ApiResponse):
     def __init__(self, response="Wrong PROLOG format", status_code=500):
         super().__init__(response, status_code)
+
+
+class WrongConditionFormat(ApiResponse):
+    def __init__(self, response="Wrong format of condition", status_code=500):
+        super().__init__(response, status_code)
+
+
+class ExecutionError(ApiResponse):
+    def __init__(self, response="Error while executing code", status_code=500):
+        super().__init__(response, status_code)

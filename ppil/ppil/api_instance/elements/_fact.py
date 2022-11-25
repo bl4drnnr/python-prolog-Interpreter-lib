@@ -12,6 +12,7 @@ class Fact:
             joins: list[str],
             conditions: list[Predicate | Condition]
     ):
+        self.type = "fact"
         self.name = name
         self.arguments = arguments
         self.joins = joins
