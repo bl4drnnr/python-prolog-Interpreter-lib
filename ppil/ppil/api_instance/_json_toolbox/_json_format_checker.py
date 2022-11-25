@@ -21,8 +21,7 @@ class JsonFormatChecker:
     def __init__(self):
         self._parsed_data = {
             'predicates': [],
-            'facts': [],
-            'lists': []
+            'facts': []
         }
 
     def check_json_format(self, data):
