@@ -1,19 +1,4 @@
-JSON_FORMAT = {
-    "predicate": {
-        "name": "str",
-        "arguments": "list"
-    },
-    "fact": {
-        "name": "str",
-        "arguments": "list",
-        "conditions": "list",
-        "joins": "list"
-    },
-    "list": {
-        "name": "str",
-        "items": "list"
-    }
-}
+JSON_FORMAT_KEYS = ['predicate', 'fact']
 ALLOWED_CONDITIONS = ['and', ',', 'or', ';']
 ALLOWED_CONDITIONS_TYPES = ['predicate', 'condition']
 CONDITION_SEPARATORS = ['=', '>', 'is', '<', '=<', '>=', '=:=', r'=\=']
