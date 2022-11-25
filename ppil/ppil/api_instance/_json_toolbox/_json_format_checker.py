@@ -24,21 +24,21 @@ class JsonFormatChecker:
                 self._parsed_data['predicates'].append(Predicate(value.get('name'), value.get('arguments')))
 
             elif key == 'fact':
-                conditions = []
+                fact_conditions = []
 
                 for con in value.get('conditions'):
                     if con.get('type') not in ALLOWED_CONDITIONS_TYPES:
                         raise WrongFactFormat(response=f"Wrong format of condition: {con}")
 
                     if con.get('type') == 'predicate':
-                        conditions.append(Predicate(con['name'], con['arguments']))
+                        fact_conditions.append(Predicate(con['name'], con['arguments']))
                     elif con.get('type') == 'condition':
                         wrong_condition = None
 
                         for condition_sep in CONDITION_SEPARATORS:
                             wrong_condition = con['value']
-                            if condition_sep in con['value']:
-                                conditions.append(Condition(con['value']))
+                            if condition_sep in con['value'] and len(con['value'].split(condition_sep)) == 2:
+                                fact_conditions.append(Condition(con['value']))
 
                         if wrong_condition is not None:
                             raise WrongConditionFormat(response=f"Wrong condition {wrong_condition}")
@@ -47,7 +47,7 @@ class JsonFormatChecker:
                     value.get('name'),
                     value.get('arguments'),
                     value.get('joins'),
-                    conditions
+                    fact_conditions
                 ))
 
             elif key == 'list':
