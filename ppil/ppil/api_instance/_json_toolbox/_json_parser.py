@@ -8,7 +8,8 @@ def parse_predicate_arguments(arguments):
         if isinstance(arg, str):
             predicate_arguments += f"{arg}, "
         elif isinstance(arg, PList):
-            predicate_arguments += f"{str(arg.items)}, "
+            quote_replace = "'"
+            predicate_arguments += f'{str(arg.items).replace(quote_replace, "")}, '
 
     return predicate_arguments
 
