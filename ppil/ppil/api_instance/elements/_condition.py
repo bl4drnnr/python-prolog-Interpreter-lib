@@ -1,4 +1,6 @@
 class Condition:
-    def __init__(self, value: str):
+    def __init__(self, right_side: str, separator: str, left_side: str):
         self.type = "condition"
-        self.value = value
+        self.right_side = right_side
+        self.separator = separator
+        self.left_side = left_side

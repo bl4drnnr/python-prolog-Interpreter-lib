@@ -9,12 +9,18 @@ class JsonParser:
     def _parse_json_facts(self, facts):
         for fact in facts:
             self._output_program += f"{fact.name}({', '.join(fact.arguments)}):-"
+
             for index, condition in enumerate(fact.conditions):
                 if condition.type == 'predicate':
                     self._output_program += f"{condition.name}({', '.join(condition.arguments)})"
+
+                if condition.type == 'condition':
+                    self._output_program += f"{condition.left_side} {condition.separator} {condition.right_side}"
+
                 if len(fact.joins):
                     if index + 1 < len(fact.conditions):
                         self._output_program += fact.joins[index]
+            
             self._output_program += '.\n'
 
     def _parse_json_lists(self, lists):

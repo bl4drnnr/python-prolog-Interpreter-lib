@@ -18,7 +18,7 @@ class JsonFormatChecker:
     def _check_items_format(self, data):
         for key, value in data.items():
             if key not in JSON_FORMAT:
-                raise WrongJsonFormat(response=f"Wrong element name {key}")
+                raise WrongJsonFormat(response=f"Wrong element name: {key}")
 
             if key == 'predicate':
                 self._parsed_data['predicates'].append(Predicate(value.get('name'), value.get('arguments')))
@@ -32,16 +32,16 @@ class JsonFormatChecker:
 
                     if con.get('type') == 'predicate':
                         fact_conditions.append(Predicate(con['name'], con['arguments']))
+
                     elif con.get('type') == 'condition':
-                        wrong_condition = None
+                        if con['separator'] not in CONDITION_SEPARATORS:
+                            raise WrongConditionFormat(response=f"Wrong separator: {con['separator']}")
 
-                        for condition_sep in CONDITION_SEPARATORS:
-                            wrong_condition = con['value']
-                            if condition_sep in con['value'] and len(con['value'].split(condition_sep)) == 2:
-                                fact_conditions.append(Condition(con['value']))
-
-                        if wrong_condition is not None:
-                            raise WrongConditionFormat(response=f"Wrong condition {wrong_condition}")
+                        fact_conditions.append(Condition(
+                            con['right_side'],
+                            con['separator'],
+                            con['left_side']
+                        ))
 
                 self._parsed_data['facts'].append(Fact(
                     value.get('name'),
