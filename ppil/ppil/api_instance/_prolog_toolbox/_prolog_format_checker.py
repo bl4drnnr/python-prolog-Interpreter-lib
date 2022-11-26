@@ -40,6 +40,8 @@ class PrologFormatChecker:
 
     def check_prolog_format(self, prolog_string):
         self._prolog_string = prolog_string['data'].replace('\n', '').strip().split('.')[:-1]
+        print('self._prolog_string', self._prolog_string)
+        print('jntireokpwsd', parse_atom(prolog_string['data'].replace('\n', '').strip()))
         return self._check_items()
 
     def _pop_current_elem_body(self):
@@ -60,24 +62,40 @@ class PrologFormatChecker:
 
         return self._parsed_json
 
-    def _parse_predicate(self, predicate):
+    def _parse_predicate(self, predicate, return_data=False):
         predicate_tokens = parse_atom(predicate)
         self._current_elem_body = predicate_tokens[2:-1]
-        self._parsed_json.append(Predicate(predicate_tokens[0], self._parse_term_body('[', ']', ignore_separators=True)))
+        if return_data:
+            return Predicate(predicate_tokens[0], self._parse_term_body('[', ']', ignore_separators=True))
+        else:
+            self._parsed_json.append(Predicate(predicate_tokens[0], self._parse_term_body('[', ']', ignore_separators=True)))
 
     def _parse_fact(self, fact):
         [fact_head, fact_body] = fact.split(':-')
-        
+
         fact_head_tokens = parse_atom(fact_head)
+
         self._current_elem_body = fact_head_tokens[2:-1]
+        fact_arguments = self._parse_term_body('[', ']', ignore_separators=True)
 
         self._current_elem_body = parse_atom(fact_body)
         parsed_fact_body = self._parse_term_body('(', ')')
+        fact_body_terms = []
+
+        term = ""
+        for item in parsed_fact_body:
+            if item in ALLOWED_CONDITIONS:
+                fact_body_terms.append(term)
+                term = ""
+            else:
+                term += item
+
+        fact_body_terms = [self._parse_predicate(item, return_data=True) for item in fact_body_terms]
         [conditions, joins] = self._serialize_fact_body(parsed_fact_body)
 
         self._parsed_json.append(Fact(
             fact_head_tokens[0],
-            self._parse_term_body('[', ']', ignore_separators=True),
+            fact_arguments,
             joins,
             conditions
         ))
@@ -85,7 +103,7 @@ class PrologFormatChecker:
     def _parse_term_body(self, open_separator, close_separator, ignore_separators=False):
         open_separator_count = 0
         close_separator_count = 0
-        
+
         items_arguments = []
         item_to_eval = ""
 
@@ -136,11 +154,7 @@ class PrologFormatChecker:
             if '(' in atom and ')' in atom:
                 self._current_elem_body = parse_atom(atom[1:-1])
                 predicate_args = self._parse_term_body('[', ']', ignore_separators=True)
-                conditions.append({
-                    "type": "predicate",
-                    "name": fact_body[index - 1],
-                    "arguments": predicate_args
-                })
+                conditions.append(Predicate(fact_body[index - 1], predicate_args))
 
             if atom in CONDITION_SEPARATORS:
                 left_side = ""
@@ -156,11 +170,6 @@ class PrologFormatChecker:
                         break
                     left_side += item
 
-                conditions.append({
-                    "type": "condition",
-                    "separator": atom,
-                    "left_side": right_side,
-                    "right_side": left_side
-                })
+                conditions.append(Condition(right_side, atom, left_side))
 
         return [conditions, joins]

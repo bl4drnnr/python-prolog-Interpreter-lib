@@ -29,9 +29,17 @@ class PrologParser:
                 })
             elif item.type == 'fact':
                 conditions = []
+
                 for condition in item.conditions:
-                    if condition.get('type') == 'predicate':
-                        conditions.append(parse_predicate_arguments(condition.get('arguments')))
+                    if condition.type == 'predicate':
+                        conditions.append(parse_predicate_arguments(condition.arguments))
+                    elif condition.type == 'condition':
+                        conditions.append({
+                            "type": condition.type,
+                            "separator": condition.separator,
+                            "left_side": condition.left_side,
+                            "right_side": condition.right_side
+                        })
 
                 self._output_json.append({
                     "item": item.type,
