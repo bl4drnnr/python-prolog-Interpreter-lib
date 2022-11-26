@@ -47,7 +47,7 @@ class PrologFormatChecker:
         }
 
         parsed_predicate["body"]["name"] = predicate_tokens[0]
-        parsed_predicate["body"]["arguments"] = self._parse_body()
+        parsed_predicate["body"]["arguments"] = self._parse_predicate_body()
 
         self._parsed_json["data"].append(parsed_predicate)
 
@@ -63,7 +63,7 @@ class PrologFormatChecker:
         )
         self._parsed_json['data'].append(fact)
 
-    def _parse_body(self):
+    def _parse_predicate_body(self):
         body_arguments = []
         open_list_brackets = 0
         close_list_brackets = 0
@@ -98,4 +98,31 @@ class PrologFormatChecker:
                 if elem != ',':
                     body_arguments.append(elem)
 
-        return body_arguments
+        serialized_arguments = []
+        for item in body_arguments:
+            if item[0] == '[' and item[-1] == ']':
+                parsed_list = {
+                    "type": "list",
+                    "items": []
+                }
+
+                str_list = ""
+                for list_symbol in item:
+                    if \
+                            list_symbol != '[' \
+                            and list_symbol != ']' \
+                            and list_symbol != ',' \
+                            and re.match("^[0-9]*$", list_symbol):
+                        str_list += list_symbol
+                    elif list_symbol == '[' or list_symbol == ']' or list_symbol == ',':
+                        str_list += list_symbol
+                    else:
+                        str_list += f"'{list_symbol}'"
+
+                parsed_list["items"].append(eval(str_list))
+
+                serialized_arguments.append(parsed_list)
+            else:
+                serialized_arguments.append(item)
+
+        return serialized_arguments
