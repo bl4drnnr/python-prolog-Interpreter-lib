@@ -1,7 +1,7 @@
 import re
-from ppil.ppil.api_instance.elements import Predicate, Fact, Condition, PList
 
-ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;]"
+ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+]"
+NUMBER_REGEX = "^[0-9]*$"
 
 
 def parse_atom(atoms):
@@ -25,7 +25,7 @@ def serialize_predicate_body(predicate_body):
                         list_symbol != '[' \
                         and list_symbol != ']' \
                         and list_symbol != ',' \
-                        and re.match("^[0-9]*$", list_symbol):
+                        and re.match(NUMBER_REGEX, list_symbol):
                     str_list += list_symbol
                 elif list_symbol == '[' or list_symbol == ']' or list_symbol == ',':
                     str_list += list_symbol
@@ -79,23 +79,74 @@ class PrologFormatChecker:
         }
 
         parsed_predicate["body"]["name"] = predicate_tokens[0]
-        parsed_predicate["body"]["arguments"] = self._parse_predicate_body()
+        parsed_predicate["body"]["arguments"] = self._parse_predicate_params()
 
         self._parsed_json["data"].append(parsed_predicate)
 
     def _parse_fact(self, fact):
         [fact_head, fact_body] = fact.split(':-')
+        
+        parsed_fact = {
+            "item": "fact",
+            "body": {}
+        }
 
-        fact_name = fact_head.split('(')[0]
-        fact_arguments = fact_head.split('(')[1][:-1].split(',')
+        fact_head_tokens = parse_atom(fact_head)
+        self._current_elem_body = fact_head_tokens[2:-1]
 
-        fact = Fact(
-            fact_name,
-            fact_arguments
-        )
-        self._parsed_json['data'].append(fact)
+        parsed_fact["body"]["name"] = fact_head_tokens[0]
+        parsed_fact["body"]["arguments"] = self._parse_predicate_params()
 
-    def _parse_predicate_body(self):
+        self._current_elem_body = parse_atom(fact_body)
+        [joins, conditions] = self._parse_rule_body()
+
+        parsed_fact["body"]["joins"] = joins
+        parsed_fact["body"]["conditions"] = conditions
+
+        self._parsed_json["data"].append(parsed_fact)
+
+    def _parse_rule_body(self):
+        joins = []
+        conditions = []
+
+        open_brackets = 0
+        close_brackets = 0
+
+        body_arguments = []
+        argument_to_parse = ""
+
+        while len(self._current_elem_body):
+            if self._get_current_elem_body() == '(':
+                inner_index = 0
+
+                while True:
+                    if open_brackets == close_brackets and open_brackets > 0 and close_brackets > 0:
+                        open_brackets = 0
+                        close_brackets = 0
+                        body_arguments.append(argument_to_parse)
+                        self._slice_current_elem_body(inner_index)
+                        argument_to_parse = ""
+                        break
+
+                    argument_to_parse += self._current_elem_body[inner_index]
+
+                    if self._current_elem_body[inner_index] == '(':
+                        open_brackets += 1
+                    elif self._current_elem_body[inner_index] == ')':
+                        close_brackets += 1
+
+                    inner_index += 1
+
+            if len(self._current_elem_body) == 0:
+                break
+            else:
+                elem = self._pop_current_elem_body()
+                if elem != ',':
+                    body_arguments.append(elem)
+
+        return [joins, conditions]
+
+    def _parse_predicate_params(self):
         body_arguments = []
         open_list_brackets = 0
         close_list_brackets = 0
@@ -118,7 +169,7 @@ class PrologFormatChecker:
 
                     if self._current_elem_body[inner_index] == '[':
                         open_list_brackets += 1
-                    if self._current_elem_body[inner_index] == ']':
+                    elif self._current_elem_body[inner_index] == ']':
                         close_list_brackets += 1
 
                     inner_index += 1
