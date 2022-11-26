@@ -21,19 +21,14 @@ def serialize_predicate_body(predicate_body):
 
             str_list = ""
             for list_symbol in item:
-                if \
-                        list_symbol != '[' \
-                        and list_symbol != ']' \
-                        and list_symbol != ',' \
-                        and re.match(NUMBER_REGEX, list_symbol):
+                if list_symbol not in ['[', ']', ','] and re.match(NUMBER_REGEX, list_symbol):
                     str_list += list_symbol
-                elif list_symbol == '[' or list_symbol == ']' or list_symbol == ',':
+                elif list_symbol in ['[', ']', ',']:
                     str_list += list_symbol
                 else:
                     str_list += f"'{list_symbol}'"
 
             parsed_list["items"].append(eval(str_list))
-
             serialized_arguments.append(parsed_list)
         else:
             serialized_arguments.append(item)
@@ -79,7 +74,7 @@ class PrologFormatChecker:
         }
 
         parsed_predicate["body"]["name"] = predicate_tokens[0]
-        parsed_predicate["body"]["arguments"] = self._parse_predicate_params()
+        parsed_predicate["body"]["arguments"] = self._parse_term_body('[', ']')
 
         self._parsed_json["data"].append(parsed_predicate)
 
@@ -95,45 +90,42 @@ class PrologFormatChecker:
         self._current_elem_body = fact_head_tokens[2:-1]
 
         parsed_fact["body"]["name"] = fact_head_tokens[0]
-        parsed_fact["body"]["arguments"] = self._parse_predicate_params()
+        parsed_fact["body"]["arguments"] = self._parse_term_body('[', ']')
 
         self._current_elem_body = parse_atom(fact_body)
-        [joins, conditions] = self._parse_rule_body()
+        [joins, conditions] = self._parse_term_body('(', ')')
 
         parsed_fact["body"]["joins"] = joins
         parsed_fact["body"]["conditions"] = conditions
 
         self._parsed_json["data"].append(parsed_fact)
 
-    def _parse_rule_body(self):
-        joins = []
-        conditions = []
-
-        open_brackets = 0
-        close_brackets = 0
-
-        body_arguments = []
-        argument_to_parse = ""
+    def _parse_term_body(self, open_separator, close_separator):
+        open_separator_count = 0
+        close_separator_count = 0
+        
+        items_arguments = []
+        item_to_eval = ""
 
         while len(self._current_elem_body):
-            if self._get_current_elem_body() == '(':
+            if self._get_current_elem_body() == open_separator:
                 inner_index = 0
 
                 while True:
-                    if open_brackets == close_brackets and open_brackets > 0 and close_brackets > 0:
-                        open_brackets = 0
-                        close_brackets = 0
-                        body_arguments.append(argument_to_parse)
+                    if open_separator_count == close_separator_count and open_separator_count > 0 and close_separator_count > 0:
+                        close_separator_count = 0
+                        open_separator_count = 0
+                        items_arguments.append(item_to_eval)
                         self._slice_current_elem_body(inner_index)
-                        argument_to_parse = ""
+                        item_to_eval = ""
                         break
 
-                    argument_to_parse += self._current_elem_body[inner_index]
+                    item_to_eval += self._current_elem_body[inner_index]
 
-                    if self._current_elem_body[inner_index] == '(':
-                        open_brackets += 1
-                    elif self._current_elem_body[inner_index] == ')':
-                        close_brackets += 1
+                    if self._current_elem_body[inner_index] == open_separator:
+                        open_separator_count += 1
+                    elif self._current_elem_body[inner_index] == close_separator:
+                        close_separator_count += 1
 
                     inner_index += 1
 
@@ -142,44 +134,7 @@ class PrologFormatChecker:
             else:
                 elem = self._pop_current_elem_body()
                 if elem != ',':
-                    body_arguments.append(elem)
+                    items_arguments.append(elem)
 
-        return [joins, conditions]
-
-    def _parse_predicate_params(self):
-        body_arguments = []
-        open_list_brackets = 0
-        close_list_brackets = 0
-        list_to_eval = ""
-
-        while len(self._current_elem_body):
-            if self._get_current_elem_body() == '[':
-                inner_index = 0
-
-                while True:
-                    if open_list_brackets == close_list_brackets and open_list_brackets > 0 and close_list_brackets > 0:
-                        close_list_brackets = 0
-                        open_list_brackets = 0
-                        body_arguments.append(list_to_eval)
-                        self._slice_current_elem_body(inner_index)
-                        list_to_eval = ""
-                        break
-
-                    list_to_eval += self._current_elem_body[inner_index]
-
-                    if self._current_elem_body[inner_index] == '[':
-                        open_list_brackets += 1
-                    elif self._current_elem_body[inner_index] == ']':
-                        close_list_brackets += 1
-
-                    inner_index += 1
-
-            if len(self._current_elem_body) == 0:
-                break
-            else:
-                elem = self._pop_current_elem_body()
-                if elem != ',':
-                    body_arguments.append(elem)
-
-        serialized_arguments = serialize_predicate_body(body_arguments)
+        serialized_arguments = serialize_predicate_body(items_arguments)
         return serialized_arguments
