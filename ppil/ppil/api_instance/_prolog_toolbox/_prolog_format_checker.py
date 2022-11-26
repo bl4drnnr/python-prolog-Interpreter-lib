@@ -25,11 +25,13 @@ class PrologFormatChecker:
     def _get_current_elem_body(self):
         return self._current_elem_body[0]
 
+    def _slice_current_elem_body(self, index):
+        self._current_elem_body = self._current_elem_body[index:]
+
     def _check_items(self):
         for elem in self._prolog_string:
             if ':-' in elem:
-                pass
-                # self._parse_fact(elem)
+                self._parse_fact(elem)
             else:
                 self._parse_predicate(elem)
 
@@ -66,16 +68,17 @@ class PrologFormatChecker:
         open_list_brackets = 0
         close_list_brackets = 0
         list_to_eval = ""
-        index = 0
 
         while len(self._current_elem_body):
-            inner_index = index
-            if self._current_elem_body[index] == '[':
+            if self._get_current_elem_body() == '[':
+                inner_index = 0
+
                 while True:
                     if open_list_brackets == close_list_brackets and open_list_brackets > 0 and close_list_brackets > 0:
                         close_list_brackets = 0
                         open_list_brackets = 0
                         body_arguments.append(list_to_eval)
+                        self._slice_current_elem_body(inner_index)
                         list_to_eval = ""
                         break
 
@@ -88,6 +91,11 @@ class PrologFormatChecker:
 
                     inner_index += 1
 
-            self._pop_current_elem_body()
+            if len(self._current_elem_body) == 0:
+                break
+            else:
+                elem = self._pop_current_elem_body()
+                if elem != ',':
+                    body_arguments.append(elem)
 
         return body_arguments
