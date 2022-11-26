@@ -9,6 +9,38 @@ def parse_atom(atoms):
     return [token.group() for token in iterator]
 
 
+def serialize_predicate_body(predicate_body):
+    serialized_arguments = []
+
+    for item in predicate_body:
+        if item[0] == '[' and item[-1] == ']':
+            parsed_list = {
+                "type": "list",
+                "items": []
+            }
+
+            str_list = ""
+            for list_symbol in item:
+                if \
+                        list_symbol != '[' \
+                        and list_symbol != ']' \
+                        and list_symbol != ',' \
+                        and re.match("^[0-9]*$", list_symbol):
+                    str_list += list_symbol
+                elif list_symbol == '[' or list_symbol == ']' or list_symbol == ',':
+                    str_list += list_symbol
+                else:
+                    str_list += f"'{list_symbol}'"
+
+            parsed_list["items"].append(eval(str_list))
+
+            serialized_arguments.append(parsed_list)
+        else:
+            serialized_arguments.append(item)
+
+    return serialized_arguments
+
+
 class PrologFormatChecker:
     def __init__(self):
         self._current_elem_body = []
@@ -98,31 +130,5 @@ class PrologFormatChecker:
                 if elem != ',':
                     body_arguments.append(elem)
 
-        serialized_arguments = []
-        for item in body_arguments:
-            if item[0] == '[' and item[-1] == ']':
-                parsed_list = {
-                    "type": "list",
-                    "items": []
-                }
-
-                str_list = ""
-                for list_symbol in item:
-                    if \
-                            list_symbol != '[' \
-                            and list_symbol != ']' \
-                            and list_symbol != ',' \
-                            and re.match("^[0-9]*$", list_symbol):
-                        str_list += list_symbol
-                    elif list_symbol == '[' or list_symbol == ']' or list_symbol == ',':
-                        str_list += list_symbol
-                    else:
-                        str_list += f"'{list_symbol}'"
-
-                parsed_list["items"].append(eval(str_list))
-
-                serialized_arguments.append(parsed_list)
-            else:
-                serialized_arguments.append(item)
-
+        serialized_arguments = serialize_predicate_body(body_arguments)
         return serialized_arguments
