@@ -19,6 +19,12 @@ class PrologFormatChecker:
         self._prolog_string = prolog_string['data'].replace('\n', '').strip().split('.')[:-1]
         return self._check_items()
 
+    def _pop_current_elem_body(self):
+        return self._current_elem_body.pop(0)
+
+    def _get_current_elem_body(self):
+        return self._current_elem_body[0]
+
     def _check_items(self):
         for elem in self._prolog_string:
             if ':-' in elem:
@@ -59,23 +65,29 @@ class PrologFormatChecker:
         body_arguments = []
         open_list_brackets = 0
         close_list_brackets = 0
-        s = ""
+        list_to_eval = ""
+        index = 0
 
-        for index in range(len(self._current_elem_body)):
-            in_idx = index
+        while len(self._current_elem_body):
+            inner_index = index
             if self._current_elem_body[index] == '[':
                 while True:
                     if open_list_brackets == close_list_brackets and open_list_brackets > 0 and close_list_brackets > 0:
                         close_list_brackets = 0
                         open_list_brackets = 0
+                        body_arguments.append(list_to_eval)
+                        list_to_eval = ""
                         break
-                    s += self._current_elem_body[in_idx]
 
-                    if self._current_elem_body[in_idx] == '[':
+                    list_to_eval += self._current_elem_body[inner_index]
+
+                    if self._current_elem_body[inner_index] == '[':
                         open_list_brackets += 1
-                    if self._current_elem_body[in_idx] == ']':
+                    if self._current_elem_body[inner_index] == ']':
                         close_list_brackets += 1
 
-                    in_idx += 1
+                    inner_index += 1
+
+            self._pop_current_elem_body()
 
         return body_arguments
