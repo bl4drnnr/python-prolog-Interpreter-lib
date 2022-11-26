@@ -36,7 +36,7 @@ class JsonFormatChecker:
 
         for item in data:
             if item.get('item') is None or item.get('body') is None:
-                raise WrongJsonFormat(response=f"Wrong item format {str(item)}")
+                raise WrongJsonFormat(response=f"Wrong item format: {str(item)}")
 
             if item.get('item') not in JSON_FORMAT_KEYS:
                 raise WrongJsonFormat(response=f"Wrong element name: {str(item)}")
