@@ -1,4 +1,5 @@
 import re
+from ppil.ppil.api_instance._variables import CONDITION_SEPARATORS, ALLOWED_CONDITIONS
 
 ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+]"
 NUMBER_REGEX = "^[0-9]*$"
@@ -74,7 +75,7 @@ class PrologFormatChecker:
         }
 
         parsed_predicate["body"]["name"] = predicate_tokens[0]
-        parsed_predicate["body"]["arguments"] = self._parse_term_body('[', ']')
+        parsed_predicate["body"]["arguments"] = self._parse_term_body('[', ']', ignore_separators=True)
 
         self._parsed_json["data"].append(parsed_predicate)
 
@@ -90,17 +91,18 @@ class PrologFormatChecker:
         self._current_elem_body = fact_head_tokens[2:-1]
 
         parsed_fact["body"]["name"] = fact_head_tokens[0]
-        parsed_fact["body"]["arguments"] = self._parse_term_body('[', ']')
+        parsed_fact["body"]["arguments"] = self._parse_term_body('[', ']', ignore_separators=True)
 
         self._current_elem_body = parse_atom(fact_body)
-        [joins, conditions] = self._parse_term_body('(', ')')
+        parsed_fact_body = self._parse_term_body('(', ')')
+        [conditions, joins] = self._serialize_fact_body(parsed_fact_body)
 
         parsed_fact["body"]["joins"] = joins
         parsed_fact["body"]["conditions"] = conditions
 
         self._parsed_json["data"].append(parsed_fact)
 
-    def _parse_term_body(self, open_separator, close_separator):
+    def _parse_term_body(self, open_separator, close_separator, ignore_separators=False):
         open_separator_count = 0
         close_separator_count = 0
         
@@ -131,10 +133,54 @@ class PrologFormatChecker:
 
             if len(self._current_elem_body) == 0:
                 break
-            else:
-                elem = self._pop_current_elem_body()
-                if elem != ',':
+
+            elem = self._pop_current_elem_body()
+
+            if ignore_separators:
+                if elem not in ALLOWED_CONDITIONS:
                     items_arguments.append(elem)
+            else:
+                items_arguments.append(elem)
 
         serialized_arguments = serialize_predicate_body(items_arguments)
         return serialized_arguments
+
+    def _serialize_fact_body(self, fact_body):
+        conditions = []
+        joins = []
+
+        for index, atom in enumerate(fact_body):
+            if atom in ALLOWED_CONDITIONS:
+                joins.append(atom)
+
+            if '(' in atom and ')' in atom:
+                self._current_elem_body = parse_atom(atom[1:-1])
+                predicate_args = self._parse_term_body('[', ']', ignore_separators=True)
+                conditions.append({
+                    "type": "predicate",
+                    "name": fact_body[index - 1],
+                    "items": predicate_args
+                })
+
+            if atom in CONDITION_SEPARATORS:
+                left_side = ""
+                right_side = ""
+
+                for item in fact_body[index + 1:]:
+                    if item in ALLOWED_CONDITIONS:
+                        break
+                    right_side += item
+
+                for item in fact_body[index - 1::-1]:
+                    if item in ALLOWED_CONDITIONS:
+                        break
+                    left_side += item
+
+                conditions.append({
+                    "type": "condition",
+                    "separator": atom,
+                    "left_side": right_side,
+                    "right_side": left_side
+                })
+
+        return [conditions, joins]
