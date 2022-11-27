@@ -1,17 +1,22 @@
-from ppil.ppil.api_instance.elements import PList
+from ppil.ppil.api_instance.elements import PList, Atom
 
 
-def parse_predicate_arguments(arguments):
-    predicate_arguments = ""
+def _check_item_type(item):
+    if isinstance(item, str):
+        return item
+    elif isinstance(item, list):
+        return [_check_item_type(i) for i in item]
+    elif isinstance(item, Atom):
+        return item.atom
+    elif isinstance(item, PList):
+        return _parse_predicate_arguments(item.items)
+    elif item.get('type') == 'list':
+        return [str(s) for s in item.get('items')]
 
-    for arg in arguments:
-        if isinstance(arg, str):
-            predicate_arguments += f"{arg}, "
-        elif isinstance(arg, PList):
-            quote_replace = "'"
-            predicate_arguments += f'{str(arg.items).replace(quote_replace, "")}, '
 
-    return predicate_arguments
+def _parse_predicate_arguments(arguments):
+    iter_items = arguments if isinstance(arguments, list) else arguments.items
+    return [_check_item_type(arg) for arg in iter_items]
 
 
 class JsonParser:
@@ -20,29 +25,21 @@ class JsonParser:
 
     def _parse_json_predicates(self, predicates):
         for predicate in predicates:
-            predicate_arguments = parse_predicate_arguments(predicate.arguments)
-            self._output_program += f"{predicate.name}({predicate_arguments[:-2]}).\n"
+            predicate_arguments = _parse_predicate_arguments(predicate.arguments)
+            self._output_program += f"{predicate.name}({str(predicate_arguments)[1:-1]}).\n"
 
     def _parse_json_facts(self, facts):
         for fact in facts:
-            self._output_program += f"{fact.name}({', '.join(fact.arguments)}):-"
+            fact_name = "test"
+            fact_arguments = str([atom.atom for atom in fact.arguments])[1:-1]
 
-            for index, condition in enumerate(fact.conditions):
-                if condition.type == 'predicate':
-                    condition_arguments = parse_predicate_arguments(condition.arguments)
-                    self._output_program += f"{condition.name}({condition_arguments[:-2]})"
+            self._output_program += f"{fact_name}({fact_arguments}):-"
 
-                if condition.type == 'condition':
-                    self._output_program += f"{condition.left_side} {condition.separator} {condition.right_side}"
+            for condition in fact.conditions:
+                self._output_program += f"{str(_parse_predicate_arguments(condition))[1:-1]}"
 
-                if len(fact.joins):
-                    if index + 1 < len(fact.conditions):
-                        self._output_program += fact.joins[index]
-
-            self._output_program += '.\n'
-
-    def parse_json(self, json):
-        self._parse_json_predicates(json.get('predicates'))
-        self._parse_json_facts(json.get('facts'))
+    def parse_json(self, serialized_json):
+        self._parse_json_predicates(serialized_json.get('predicates'))
+        self._parse_json_facts(serialized_json.get('facts'))
 
         return self._output_program
