@@ -1,20 +1,26 @@
-from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat, WrongConditionFormat
-from ppil.ppil.api_instance._variables import JSON_FORMAT_KEYS, ALLOWED_CONDITIONS_TYPES, CONDITION_SEPARATORS
-from ppil.ppil.api_instance.elements import Predicate, Fact, Condition, PList
+from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
+from ppil.ppil.api_instance._variables import JSON_FORMAT_KEYS
+from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom
 
 
-def parse_predicate_arguments(arguments):
-    predicate_arguments = []
+def _check_item_type(item):
+    if isinstance(item, str):
+        return Atom(item)
+    elif item.get('type') == 'list':
+        return PList(item.get('items'))
+    elif item.get('type') == 'predicate':
+        return _parse_predicate(item.get('body'))
 
-    for arg in arguments:
-        if isinstance(arg, str):
-            predicate_arguments.append(arg)
-        elif arg.get('type') == 'list' and len(arg.get('items', [])) > 0:
-            predicate_arguments.append(PList(arg.get('items')))
-        else:
-            raise WrongJsonFormat(response=f"Wrong element name: {arguments}")
 
-    return predicate_arguments
+def _parse_predicate(predicate):
+    return [_check_item_type(arg) for arg in predicate.get('arguments')]
+
+
+def _parse_fact(fact):
+    arguments = _parse_predicate(fact)
+    conditions = [_check_item_type(condition) for condition in fact.get('conditions')]
+
+    return [arguments, conditions]
 
 
 class JsonFormatChecker:
@@ -35,41 +41,27 @@ class JsonFormatChecker:
         data = data['data']
 
         for item in data:
-            if item.get('item') is None or item.get('body') is None:
+            if item.get('type') is None or item.get('body') is None:
                 raise WrongJsonFormat(response=f"Wrong item format: {str(item)}")
 
-            if item.get('item') not in JSON_FORMAT_KEYS:
+            if item.get('type') not in JSON_FORMAT_KEYS:
                 raise WrongJsonFormat(response=f"Wrong element name: {str(item)}")
 
             item_body = item.get('body')
 
-            if item.get('item') == 'predicate':
-                predicate_arguments = parse_predicate_arguments(item_body.get('arguments'))
-                self._parsed_data['predicates'].append(Predicate(item_body.get('name'), predicate_arguments))
+            if item.get('type') == 'predicate':
+                if item_body.get('arguments') is None or item_body.get('name') is None:
+                    raise WrongJsonFormat(response=f"No name or arguments for predicate: {str(item_body)}")
 
-            elif item.get('item') == 'fact':
-                fact_conditions = []
+                self._parsed_data.get('predicates').append(Predicate(item_body.get('name'), _parse_predicate(item_body)))
 
-                for con in item_body.get('conditions'):
-                    if con.get('type') not in ALLOWED_CONDITIONS_TYPES:
-                        raise WrongFactFormat(response=f"Wrong format of condition: {con}")
+            elif item.get('type') == 'fact':
+                if \
+                        item_body.get('arguments') is None or \
+                        item_body.get('conditions') is None or \
+                        item_body.get('joins') is None or \
+                        item_body.get('name') is None:
+                    raise WrongFactFormat(response=f"Lack of required field for fact: {str(item_body)}")
 
-                    if con.get('type') == 'predicate':
-                        predicate_arguments = parse_predicate_arguments(con['arguments'])
-                        fact_conditions.append(Predicate(con['name'], predicate_arguments))
-
-                    elif con.get('type') == 'condition':
-                        if con['separator'] not in CONDITION_SEPARATORS:
-                            raise WrongConditionFormat(response=f"Wrong separator: {con['separator']}")
-
-                        fact_conditions.append(Condition(
-                            con['right_side'],
-                            con['separator'],
-                            con['left_side']
-                        ))
-
-                self._parsed_data['facts'].append(Fact(
-                    item_body.get('arguments'),
-                    item_body.get('joins'),
-                    fact_conditions
-                ))
+                [arguments, conditions] = _parse_fact(item_body)
+                self._parsed_data.get('facts').append(Fact(arguments, item.get('joins'), conditions))
