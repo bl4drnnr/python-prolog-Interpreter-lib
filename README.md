@@ -3,14 +3,16 @@
 1. [Python PROLOG Interpreter Library](#python-prolog-interpreter-library)
 2. [Installation and usage](#installation-and-example-of-usage)
    1. [Installation](#installation)
-   2. [Example of usage](#example-of-usage)
-3. [Documentation](#documentation)
-   1. [Introduction to Prolog](#introduction-to-prolog)
-      1. [Data types](#data-types)
-      2. [Rules and facts](#rules-and-facts)
-   2. [Usage](#usage)
-4. [References and contact](#references-and-contact)
-5. [Licence](#license)
+   2. [Example of library usage](#example-of-library-usage)
+   3. [Example of API usage](#example-of-api-usage)
+3. [Introduction to Prolog](#introduction-to-prolog)
+   1. [Data types](#data-types)
+   2. [Rules and facts](#rules-and-facts)
+4. [Documentation](#documentation)
+   1. [Usage of library](#usage-of-library)
+   2. [Usage of API](#usage-of-api)
+5. [References and contact](#references-and-contact)
+6. [Licence](#license)
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
@@ -23,7 +25,7 @@
 Application is built from 3 different parts:
 - **Interactive CLI**
 - **Classical terminal-based application**
-- `Python` library
+- `Python` library with interpreter and API instance
 
 Right now, you are reading about `Python` library, if you want to find out more about _CLI's_, ses [this](https://github.com/bl4drnnr/python-prolog-interpreter-cli) repository.
 
@@ -40,7 +42,7 @@ In order to install library, open up terminal in project folder and type:
 pip install ppil
 ```
 
-### Example of usage
+### Example of library usage
 
 Here is example of usage and, at the same time, the way how you can test the program:
 
@@ -72,13 +74,23 @@ ancestors_db = ppil.KnowledgeDatabase(ancestors_payload)
 solution = ancestors_db.find_solutions(query)
 ```
 
+### Example of API usage
+
+You can create API instance, that can receive `JSON` (format will be described later) or `Prolog` and
+send it back transform in other format. Also, it allows you to compile code and get result in both formats.
+
+```python
+from ppil import ApiInstance
+
+api = ApiInstance()
+api.run(debug=True)
+```
+
 More about how it works, you can find below, in [Documentation](#documentation) section.
 
 ---
 
-## Documentation
-
-### Introduction to Prolog
+## Introduction to Prolog
 
 A little introduction to **_Prolog_**.
 
@@ -88,7 +100,7 @@ If the negated query can be refuted, i.e., an instantiation for all free variabl
 This makes Prolog (and other logic programming languages) particularly useful for database, symbolic mathematics, and language parsing applications. Because Prolog allows impure predicates, checking the truth value of certain special predicates may have some deliberate side effect, such as printing a value to the screen. 
 Because of this, the programmer is permitted to use some amount of conventional imperative programming when the logical paradigm is inconvenient. It has a purely logical subset, called "pure Prolog", as well as a number of extralogical features.
 
-#### Data types
+### Data types
 
 Prolog's single data type is the term. Terms are either atoms, numbers, variables or compound terms.
 
@@ -102,7 +114,7 @@ Special cases of compound terms:
 - A _List_ is an ordered collection of terms. It is denoted by square brackets with the terms separated by commas, or in the case of the empty list, by `[]`. For example, `[1,2,3]` or `[red,green,blue]`.
 - _Strings_: A sequence of characters surrounded by quotes is equivalent to either a list of (numeric) character codes, a list of characters (atoms of length 1), or an atom depending on the value of the Prolog flag `double_quotes`. For example, `to be, or not to be`.
 
-#### Rules and facts
+### Rules and facts
 
 Prolog programs describe relations, defined by means of clauses. Pure Prolog is restricted to **_Horn clauses_**. There are two types of clauses: facts and rules. A rule is of the form
 
@@ -164,9 +176,14 @@ parts (`append(X, Y, List)`, given a list `List`). For this reason, a comparativ
 As a general purpose language, Prolog also provides various built-in predicates to perform routine activities like input/output, using graphics and otherwise communicating with the operating system. 
 These predicates are not given a relational meaning and are only useful for the side-effects they exhibit on the system. For example, the predicate `write/1` displays a term on the screen.
 
-### Usage
 
-To start use Prolog, first of all, you need to import it in your code:
+---
+
+## Documentation
+
+### Usage of library
+
+To start use `Prolog`, first of all, you need to import it in your code:
 
 ```python
 import ppil
@@ -202,6 +219,8 @@ assert ("johnny" in str(solution) for solution in solutions.get("Y"))
 ```
 
 More examples and test you will find in the `tests` folder.
+
+### Usage of API
 
 ---
 

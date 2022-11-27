@@ -1,6 +1,5 @@
 from ppil import KnowledgeDatabase, ApiInstance
 
-
 def main():
     db_payload = """
         lot(a2324, warszawa, 1800, 1845(1, 1, 1, 1, 5, 1, 1), dni(1, 1, 1, 1, 1, 1, 1)).
