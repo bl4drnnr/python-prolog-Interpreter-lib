@@ -1,19 +1,47 @@
-from ppil.ppil.api_instance.elements import PList
+from ppil.ppil.api_instance.elements import PList, Atom, Predicate
 
 
-def parse_predicate_arguments(arguments):
+def _parse_predicate_arguments(arguments):
     predicate_arguments = []
+    iter_items = arguments if isinstance(arguments, list) else arguments.items
 
-    for arg in arguments:
+    for arg in iter_items:
         if isinstance(arg, str):
             predicate_arguments.append(arg)
+        elif isinstance(arg, Atom):
+            predicate_arguments.append(arg.atom)
         elif isinstance(arg, PList):
             predicate_arguments.append({
                 "type": arg.type,
-                "items": arg.items
+                "items": _parse_predicate_arguments(arg.items)
             })
 
     return predicate_arguments
+
+
+def _parse_condition(condition):
+    parsed_conditions = []
+
+    for predicate_item in condition.arguments.items:
+        if isinstance(predicate_item, str):
+            parsed_conditions.append(predicate_item)
+        elif isinstance(predicate_item, Atom):
+            parsed_conditions.append(predicate_item.atom)
+        elif isinstance(predicate_item, PList):
+            parsed_conditions.append({
+                "type": predicate_item.type,
+                "items": _parse_predicate_arguments(predicate_item)
+            })
+        elif isinstance(predicate_item, Predicate):
+            parsed_conditions.append({
+                "type": predicate_item.type,
+                "body": {
+                    "name": predicate_item.name,
+                    "arguments": _parse_condition(predicate_item)
+                }
+            })
+
+    return parsed_conditions
 
 
 class PrologParser:
@@ -24,28 +52,29 @@ class PrologParser:
         for item in prolog_data:
             if item.type == 'predicate':
                 self._output_json.append({
-                    "item": item.type,
-                    "body": parse_predicate_arguments(item.arguments)
+                    "type": item.type,
+                    "body": {
+                        "name": item.name,
+                        "arguments": _parse_predicate_arguments(item.arguments)
+                    }
                 })
             elif item.type == 'fact':
                 conditions = []
 
                 for condition in item.conditions:
-                    if condition.type == 'predicate':
-                        conditions.append(parse_predicate_arguments(condition.arguments))
-                    elif condition.type == 'condition':
-                        conditions.append({
-                            "type": condition.type,
-                            "separator": condition.separator,
-                            "left_side": condition.left_side,
-                            "right_side": condition.right_side
-                        })
+                    conditions.append({
+                        "type": condition.type,
+                        "body": {
+                            "name": condition.name,
+                            "arguments": _parse_condition(condition)
+                        }
+                    })
 
                 self._output_json.append({
-                    "item": item.type,
+                    "type": item.type,
                     "body": {
-                        "name": item.name,
-                        "arguments": parse_predicate_arguments(item.arguments),
+                        "name": item.arguments.name,
+                        "arguments": _parse_predicate_arguments(item.arguments.arguments),
                         "joins": item.joins,
                         "conditions": conditions
                     }
