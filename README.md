@@ -70,7 +70,7 @@ query = """
         osoba(ania, person7, person8, f, 77).
 """
 
-ancestors_db = ppil.KnowledgeDatabase(ancestors_payload)
+ancestors_db = KnowledgeDatabase(ancestors_payload)
 solution = ancestors_db.find_solutions(query)
 ```
 
@@ -205,7 +205,7 @@ goal = """
         is_tall(Y, yes)
 """
 
-database = ppil.KnowledgeDatabase(KnowledgeDatabase)
+database = KnowledgeDatabase(KnowledgeDatabase)
 solution = database.find_solutions(goal)
 ```
 
@@ -221,6 +221,131 @@ assert ("johnny" in str(solution) for solution in solutions.get("Y"))
 More examples and test you will find in the `tests` folder.
 
 ### Usage of API
+
+Also, you can create API instance that allows you to send requests and receive responses with formatted data.
+Generally speaking, you can convert `JSON` to `Prolog` and `Prolog` to `JSON`.
+
+There are 2 endpoints for that:
+```
+POST /json-to-prolog
+POST /prolog-to-json
+```
+
+The first and the main requirement is that you need to send data in `JSON` format with your data in `data`.
+
+For example, if you want to use `/prolog-to-json` endpoint, your `JSON` body will be looking like this:
+
+```json
+{
+   "data": "predicate_name(arg1, arg2, arg3)."
+}
+```
+
+A bit different situation looks like when you are trying to send data to `/json-to-prolog` endpoint.
+Everything also starts with data in `data`, but as value it gets array of properly parsed objects,
+that describes `Prolog` data. Here is the example of data in previous example converted to `JSON`:
+
+```json
+{
+    "data": [
+        {
+            "body": {
+                "arguments": [
+                    "arg1",
+                    "arg2",
+                    "arg3"
+                ],
+                "name": "predicate_name"
+            },
+            "type": "predicate"
+        }
+    ]
+}
+```
+
+The 2 _main_ types that are allowed to use are `predicate` and `fact`.
+
+Format of `predicate`:
+```json
+{
+   "body": {
+      "arguments": "<LIST_OF_ARGUMENTS>",
+      "name": "<NAME_OF_PREDICATE>"
+   },
+   "type": "predicate"
+}
+```
+
+It's better to see on example how structure of facts looks like. Let's say we have next rule:
+`predicate(arg1, arg2, arg3):-test(2,4,5),test2(['lists']).`. After using `/prolog-to-json`
+endpoint, we will get next result:
+
+```json
+{
+    "data": [
+        {
+            "body": {
+                "arguments": [
+                    "arg1",
+                    "arg2",
+                    "arg3"
+                ],
+                "conditions": [
+                    {
+                        "body": {
+                            "arguments": [
+                                "2",
+                                "4",
+                                "5"
+                            ],
+                            "name": "test"
+                        },
+                        "type": "predicate"
+                    },
+                    {
+                        "body": {
+                            "arguments": [
+                                {
+                                    "items": [
+                                        "lists"
+                                    ],
+                                    "type": "list"
+                                }
+                            ],
+                            "name": "test2"
+                        },
+                        "type": "predicate"
+                    }
+                ],
+                "joins": [
+                    ","
+                ],
+                "name": "predicate"
+            },
+            "type": "fact"
+        }
+    ]
+}
+```
+
+So, format of facts looks like this:
+```json
+{
+   "body": {
+      "arguments": "<LIST_OF_FACTS_ARGUMENTS>",
+      "conditions": "<LIST_OF_FACTS_BODY_TERMS>",
+      "joins": "<LIST_OF_JOINS_THAT_JOIN_TERMS>",
+      "name": "<NAME_OF_FACT>"
+   },
+   "type": "fact"
+}
+```
+
+Values in `joins` join conditions in the order they are placed.
+
+As you noticed above, the other type you can meet within arguments is `list`.  
+
+And as you probably already have guessed, lists can be nested.
 
 ---
 
