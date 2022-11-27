@@ -1,5 +1,5 @@
 class Predicate:
-    def __init__(self, name: str, arguments: list):
+    def __init__(self, name, arguments):
         self.type = "predicate"
         self.name = name
         self.arguments = arguments

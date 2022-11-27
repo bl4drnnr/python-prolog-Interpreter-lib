@@ -1,16 +1,19 @@
-from ppil.ppil.api_instance.elements import PList
+from ppil.ppil.api_instance.elements import PList, Atom
 
 
 def parse_predicate_arguments(arguments):
     predicate_arguments = []
+    iter_items = arguments if isinstance(arguments, list) else arguments.items
 
-    for arg in arguments:
+    for arg in iter_items:
         if isinstance(arg, str):
             predicate_arguments.append(arg)
+        elif isinstance(arg, Atom):
+            predicate_arguments.append(arg.atom)
         elif isinstance(arg, PList):
             predicate_arguments.append({
                 "type": arg.type,
-                "items": arg.items
+                "items": parse_predicate_arguments(arg.items)
             })
 
     return predicate_arguments
@@ -25,7 +28,10 @@ class PrologParser:
             if item.type == 'predicate':
                 self._output_json.append({
                     "item": item.type,
-                    "body": parse_predicate_arguments(item.arguments)
+                    "body": {
+                        "name": item.name,
+                        "arguments": parse_predicate_arguments(item.arguments)
+                    }
                 })
             elif item.type == 'fact':
                 conditions = []
@@ -44,8 +50,8 @@ class PrologParser:
                 self._output_json.append({
                     "item": item.type,
                     "body": {
-                        "name": item.name,
-                        "arguments": parse_predicate_arguments(item.arguments),
+                        "name": item.arguments.name,
+                        "arguments": parse_predicate_arguments(item.arguments.arguments),
                         "joins": item.joins,
                         "conditions": conditions
                     }

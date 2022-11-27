@@ -69,7 +69,6 @@ class JsonFormatChecker:
                         ))
 
                 self._parsed_data['facts'].append(Fact(
-                    item_body.get('name'),
                     item_body.get('arguments'),
                     item_body.get('joins'),
                     fact_conditions
