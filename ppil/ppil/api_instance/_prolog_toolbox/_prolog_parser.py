@@ -62,7 +62,13 @@ class PrologParser:
                 conditions = []
 
                 for condition in item.conditions:
-                    conditions.append(_parse_condition(condition))
+                    conditions.append({
+                        "type": condition.type,
+                        "body": {
+                            "name": condition.name,
+                            "arguments": _parse_condition(condition)
+                        }
+                    })
 
                 self._output_json.append({
                     "type": item.type,
