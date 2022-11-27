@@ -1,47 +1,33 @@
 from ppil.ppil.api_instance.elements import PList, Atom, Predicate
 
 
+def _check_item_type(item):
+    if isinstance(item, str):
+        return item
+    elif isinstance(item, Atom):
+        return item.atom
+    elif isinstance(item, PList):
+        return {
+            "type": item.type,
+            "items": _parse_predicate_arguments(item.items)
+        }
+    elif isinstance(item, Predicate):
+        return {
+            "type": item.type,
+            "body": {
+                "name": item.name,
+                "arguments": _parse_condition(item)
+            }
+        }
+
+
 def _parse_predicate_arguments(arguments):
-    predicate_arguments = []
     iter_items = arguments if isinstance(arguments, list) else arguments.items
-
-    for arg in iter_items:
-        if isinstance(arg, str):
-            predicate_arguments.append(arg)
-        elif isinstance(arg, Atom):
-            predicate_arguments.append(arg.atom)
-        elif isinstance(arg, PList):
-            predicate_arguments.append({
-                "type": arg.type,
-                "items": _parse_predicate_arguments(arg.items)
-            })
-
-    return predicate_arguments
+    return [_check_item_type(arg) for arg in iter_items]
 
 
 def _parse_condition(condition):
-    parsed_conditions = []
-
-    for predicate_item in condition.arguments.items:
-        if isinstance(predicate_item, str):
-            parsed_conditions.append(predicate_item)
-        elif isinstance(predicate_item, Atom):
-            parsed_conditions.append(predicate_item.atom)
-        elif isinstance(predicate_item, PList):
-            parsed_conditions.append({
-                "type": predicate_item.type,
-                "items": _parse_predicate_arguments(predicate_item)
-            })
-        elif isinstance(predicate_item, Predicate):
-            parsed_conditions.append({
-                "type": predicate_item.type,
-                "body": {
-                    "name": predicate_item.name,
-                    "arguments": _parse_condition(predicate_item)
-                }
-            })
-
-    return parsed_conditions
+    return [_check_item_type(predicate_item) for predicate_item in condition.arguments.items]
 
 
 class PrologParser:
