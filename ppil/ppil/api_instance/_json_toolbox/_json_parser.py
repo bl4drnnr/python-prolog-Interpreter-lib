@@ -39,6 +39,12 @@ class JsonParser:
     def __init__(self):
         self._output_program = ''
 
+    def parse_json(self, serialized_json):
+        self._parse_json_predicates(serialized_json.get('predicates'))
+        self._parse_json_facts(serialized_json.get('facts'))
+
+        return self._output_program
+
     def _parse_json_predicates(self, predicates):
         for predicate in predicates:
             predicate_arguments = _parse_predicate_arguments(predicate.arguments)
@@ -51,13 +57,9 @@ class JsonParser:
 
             self._output_program += f"{fact_name}({fact_arguments}):-"
 
-            # TODO JOINS HERE
-            for condition in fact.conditions:
+            for index, condition in enumerate(fact.conditions):
+                join = fact.joins[index] if index < len(fact.joins) else ''
                 serialized_arguments = _serialize_arguments(_parse_predicate_arguments(condition.arguments))
-                self._output_program += f"{condition.name}({serialized_arguments})"
+                self._output_program += f"{condition.name}({serialized_arguments}){join}"
 
-    def parse_json(self, serialized_json):
-        self._parse_json_predicates(serialized_json.get('predicates'))
-        self._parse_json_facts(serialized_json.get('facts'))
-
-        return self._output_program
+            self._output_program += ".\n"

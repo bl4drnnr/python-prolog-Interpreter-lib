@@ -64,4 +64,4 @@ class JsonFormatChecker:
                     raise WrongFactFormat(response=f"Lack of required field for fact: {str(item_body)}")
 
                 [arguments, conditions] = _parse_fact(item_body)
-                self._parsed_data.get('facts').append(Fact(item_body.get('name'), arguments, item.get('joins'), conditions))
+                self._parsed_data.get('facts').append(Fact(item_body.get('name'), arguments, item_body.get('joins'), conditions))
