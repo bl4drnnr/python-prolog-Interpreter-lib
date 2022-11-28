@@ -14,6 +14,7 @@ class PrologFormatChecker:
     def __init__(self):
         self._prolog_string = []
         self._parsed_json = []
+        self._joins = []
 
     def check_prolog_format(self, prolog_string):
         self._prolog_string = _parse_atom(prolog_string['data'].replace('\n', '').strip())
@@ -44,15 +45,17 @@ class PrologFormatChecker:
         while self._get_current_prolog_element() != ".":
             arguments.append(self._parse_term())
 
-            if self._get_current_prolog_element() == ",":
-                self._pop_current_prolog_element()
+            if self._get_current_prolog_element() == "," or self._get_current_prolog_element() == ";":
+                separator = self._pop_current_prolog_element()
+                self._joins.append(separator)
 
         self._pop_current_prolog_element()
 
         tail = arguments[0] if arguments == 1 else arguments
 
-        # TODO dont forget about joins
-        return Fact(item_predicate.name, item_predicate, [""], tail)
+        f = Fact(item_predicate.name, item_predicate, self._joins, tail)
+        self._joins = []
+        return f
 
     def _parse_term(self):
         if self._get_current_prolog_element() == "(":
