@@ -52,7 +52,7 @@ class PrologFormatChecker:
         tail = arguments[0] if arguments == 1 else arguments
 
         # TODO dont forget about joins
-        return Fact(item_predicate, [""], tail)
+        return Fact(item_predicate.name, item_predicate, [""], tail)
 
     def _parse_term(self):
         if self._get_current_prolog_element() == "(":

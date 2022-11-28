@@ -30,13 +30,13 @@ class JsonParser:
 
     def _parse_json_facts(self, facts):
         for fact in facts:
-            fact_name = "test"
+            fact_name = fact.name
             fact_arguments = str([atom.atom for atom in fact.arguments])[1:-1]
 
             self._output_program += f"{fact_name}({fact_arguments}):-"
 
             for condition in fact.conditions:
-                self._output_program += f"{str(_parse_predicate_arguments(condition))[1:-1]}"
+                self._output_program += f"{condition.name}({str(_parse_predicate_arguments(condition.arguments))[1:-1]})"
 
     def parse_json(self, serialized_json):
         self._parse_json_predicates(serialized_json.get('predicates'))
