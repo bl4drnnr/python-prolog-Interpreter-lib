@@ -9,7 +9,7 @@ def _check_item_type(item):
     elif item.get('type') == 'list':
         return PList(item.get('items'))
     elif item.get('type') == 'predicate':
-        return _parse_predicate(item.get('body'))
+        return Predicate(item.get('body').get('name'), _parse_predicate(item.get('body')))
 
 
 def _parse_predicate(predicate):
@@ -64,4 +64,4 @@ class JsonFormatChecker:
                     raise WrongFactFormat(response=f"Lack of required field for fact: {str(item_body)}")
 
                 [arguments, conditions] = _parse_fact(item_body)
-                self._parsed_data.get('facts').append(Fact(arguments, item.get('joins'), conditions))
+                self._parsed_data.get('facts').append(Fact(item_body.get('name'), arguments, item_body.get('joins'), conditions))
