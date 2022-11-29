@@ -12,7 +12,10 @@ def _check_item_type(item):
             return f"{item.atom},"
 
     elif isinstance(item, PList):
-        return f"[{_parse_predicate_arguments(item.items)}]]"
+        if item.head and item.tail:
+            return f"[{item.head}|{item.tail}],"
+        else:
+            return f"[{_parse_predicate_arguments(item.items)}]]"
 
     elif isinstance(item, Predicate):
         serialized_text = str(_parse_predicate_arguments(item.arguments))[1:-1]
@@ -64,9 +67,12 @@ class JsonParser:
     def _parse_json_facts(self, facts):
         for fact in facts:
             fact_name = fact.name
-            fact_arguments = str([atom.atom for atom in fact.arguments])[1:-1]
+            fact_arguments = ""
 
-            self._output_program += f"{fact_name}({fact_arguments}):-"
+            for atom in fact.arguments:
+                fact_arguments += _check_item_type(atom)
+
+            self._output_program += f"{fact_name}({fact_arguments[:-1]}):-"
 
             for index, condition in enumerate(fact.conditions):
                 join = fact.joins[index] if index < len(fact.joins) else ''
