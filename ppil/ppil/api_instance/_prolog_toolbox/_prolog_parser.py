@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance.elements import PList, Atom, Predicate
+from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition
 
 
 def _check_item_type(item):
@@ -52,13 +52,21 @@ class PrologParser:
                 conditions = []
 
                 for condition in item.conditions:
-                    conditions.append({
-                        "type": condition.type,
-                        "body": {
-                            "name": condition.name,
-                            "arguments": _parse_condition(condition)
-                        }
-                    })
+                    if isinstance(condition, Predicate):
+                        conditions.append({
+                            "type": condition.type,
+                            "body": {
+                                "name": condition.name,
+                                "arguments": _parse_condition(condition)
+                            }
+                        })
+                    elif isinstance(condition, Condition):
+                        conditions.append({
+                            "type": condition.type,
+                            "right_side": condition.right_side,
+                            "left_side": condition.left_side,
+                            "separator": condition.separator
+                        })
 
                 self._output_json.append({
                     "type": item.type,

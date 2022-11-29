@@ -1,7 +1,8 @@
 import re
-from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom
+from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition
+from ppil.ppil.api_instance._variables import CONDITION_SEPARATORS
 
-ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+\']"
+ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+\'-]"
 NUMBER_REGEX = "^[0-9]*$"
 VARIABLE_REGEX = r"^[A-Z_][A-Za-z0-9_]*$"
 
@@ -36,6 +37,25 @@ class PrologFormatChecker:
     def _check_items(self):
         while len(self._prolog_string) > 0:
             self._parsed_json.append(self._parse_item())
+
+        for item in self._parsed_json:
+            if isinstance(item, Fact):
+                fact_atoms = []
+                separator = ""
+
+                for index, condition in enumerate(item.conditions):
+                    if isinstance(condition, Atom):
+                        fact_atoms.append(condition)
+
+                fact_atom_str = ""
+                for atom in fact_atoms:
+                    if atom.atom in CONDITION_SEPARATORS:
+                        separator = atom.atom
+                    fact_atom_str += atom.atom
+
+                [left_side, right_side] = fact_atom_str.split(separator)
+                item.conditions.append(Condition(left_side, separator, right_side))
+
         return self._parsed_json
 
     def _parse_item(self):
