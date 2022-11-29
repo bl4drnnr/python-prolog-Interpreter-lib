@@ -31,8 +31,15 @@ class JsonFormatChecker:
         }
 
     def check_json_format(self, data):
+        self._reset_data()
         self._check_items_format(data)
         return self._parsed_data
+
+    def _reset_data(self):
+        self._parsed_data = {
+            'predicates': [],
+            'facts': []
+        }
 
     def _check_items_format(self, data):
         if not data.get('data'):

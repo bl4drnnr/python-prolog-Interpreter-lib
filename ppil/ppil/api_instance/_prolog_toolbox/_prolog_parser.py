@@ -35,6 +35,8 @@ class PrologParser:
         self._output_json = []
 
     def parse_prolog(self, prolog_data):
+        self._reset_data()
+
         for item in prolog_data:
             if item.type == 'predicate':
                 self._output_json.append({
@@ -67,3 +69,6 @@ class PrologParser:
                 })
 
         return self._output_json
+
+    def _reset_data(self):
+        self._output_json = []

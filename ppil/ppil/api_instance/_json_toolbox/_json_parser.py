@@ -40,10 +40,15 @@ class JsonParser:
         self._output_program = ''
 
     def parse_json(self, serialized_json):
+        self._reset_data()
+
         self._parse_json_predicates(serialized_json.get('predicates'))
         self._parse_json_facts(serialized_json.get('facts'))
 
         return self._output_program
+
+    def _reset_data(self):
+        self._output_program = ''
 
     def _parse_json_predicates(self, predicates):
         for predicate in predicates:

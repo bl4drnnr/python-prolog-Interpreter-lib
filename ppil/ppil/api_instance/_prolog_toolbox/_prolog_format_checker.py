@@ -17,9 +17,14 @@ class PrologFormatChecker:
         self._joins = []
 
     def check_prolog_format(self, prolog_string):
+        self._reset_data()
         self._prolog_string = _parse_atom(prolog_string['data'].replace('\n', '').strip())
-        self._check_items()
-        return self._parsed_json
+        return self._check_items()
+
+    def _reset_data(self):
+        self._prolog_string = []
+        self._parsed_json = []
+        self._joins = []
 
     def _get_current_prolog_element(self):
         return self._prolog_string[0]
@@ -30,6 +35,7 @@ class PrologFormatChecker:
     def _check_items(self):
         while len(self._prolog_string) > 0:
             self._parsed_json.append(self._parse_item())
+        return self._parsed_json
 
     def _parse_item(self):
         item_predicate = self._parse_term()
