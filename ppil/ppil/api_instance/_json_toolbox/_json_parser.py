@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition
+from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition, ConditionStatement
 
 
 def _check_item_type(item):
@@ -12,12 +12,24 @@ def _check_item_type(item):
             return f"{item.atom},"
 
     elif isinstance(item, PList):
-        return f"[{_parse_predicate_arguments(item.items)}]]"
+        if item.head and item.tail:
+            return f"[{item.head}|{item.tail}],"
+        else:
+            return f"[{_parse_predicate_arguments(item.items)}]]"
 
     elif isinstance(item, Predicate):
         serialized_text = str(_parse_predicate_arguments(item.arguments))[1:-1]
         serialized_text = serialized_text.replace('\'', '')
         return f"{item.name}({serialized_text})"
+
+    elif isinstance(item, Condition):
+        return f"{item.left_side}{item.separator}{item.right_side}"
+
+    elif isinstance(item, ConditionStatement):
+        if_condition = _check_item_type(item.if_condition)
+        else_clause = _check_item_type(item.else_clause)
+        then_clause = _check_item_type(item.then_clause)
+        return f"{if_condition}->{else_clause};{then_clause}"
 
 
 def _parse_predicate_arguments(arguments):
@@ -64,9 +76,12 @@ class JsonParser:
     def _parse_json_facts(self, facts):
         for fact in facts:
             fact_name = fact.name
-            fact_arguments = str([atom.atom for atom in fact.arguments])[1:-1]
+            fact_arguments = ""
 
-            self._output_program += f"{fact_name}({fact_arguments}):-"
+            for atom in fact.arguments:
+                fact_arguments += _check_item_type(atom)
+
+            self._output_program += f"{fact_name}({fact_arguments[:-1]}):-"
 
             for index, condition in enumerate(fact.conditions):
                 join = fact.joins[index] if index < len(fact.joins) else ''
@@ -76,5 +91,7 @@ class JsonParser:
                     self._output_program += f"{condition.name}({serialized_arguments}){join}"
                 elif isinstance(condition, Condition):
                     self._output_program += f"{condition.left_side}{condition.separator}{condition.right_side}{join}"
+                elif isinstance(condition, ConditionStatement):
+                    self._output_program += f"({_check_item_type(condition)}){join}"
 
             self._output_program += ".\n"

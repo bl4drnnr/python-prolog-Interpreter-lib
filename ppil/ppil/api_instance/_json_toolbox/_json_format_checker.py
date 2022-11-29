@@ -1,17 +1,29 @@
-from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
+from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat, WrongConditionStatementFormat
 from ppil.ppil.api_instance._variables import JSON_FORMAT_KEYS
-from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition
+from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
 
 
 def _check_item_type(item):
     if item.get('type') == 'atom':
         return Atom(item.get('value'), item.get('data_type'))
     elif item.get('type') == 'list':
-        return PList([_check_item_type(i) for i in item.get('items')])
+        if item.get('head') and item.get('tail'):
+            return PList([], item.get('head'), item.get('tail'))
+        else:
+            return PList([_check_item_type(i) for i in item.get('items')])
     elif item.get('type') == 'predicate':
         return Predicate(item.get('name'), _parse_predicate(item))
     elif item.get('type') == 'condition':
         return Condition(item.get('left_side'), item.get('separator'), item.get('right_side'))
+    # TODO Continue here
+    # Prolog to JSON for condition statements works just find
+    # Done with JSON to Prolog for condition statements
+    elif item.get('type') == 'condition_statement':
+        return ConditionStatement(
+            _check_item_type(item.get('if_condition')),
+            _parse_fact(item.get('then_clause')),
+            _parse_fact(item.get('else_clause'))
+        )
 
 
 def _parse_predicate(predicate):
@@ -29,7 +41,8 @@ class JsonFormatChecker:
     def __init__(self):
         self._parsed_data = {
             'predicates': [],
-            'facts': []
+            'facts': [],
+            'condition_statements': []
         }
 
     def check_json_format(self, data):

@@ -24,6 +24,11 @@ class WrongConditionFormat(ApiResponse):
         super().__init__(response, status_code)
 
 
+class WrongConditionStatementFormat(ApiResponse):
+    def __init__(self, response="Wrong format of condition statement", status_code=500):
+        super().__init__(response, status_code)
+
+
 class ExecutionError(ApiResponse):
     def __init__(self, response="Error while executing code", status_code=500):
         super().__init__(response, status_code)

@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition
+from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition, ConditionStatement
 
 
 def _check_item_type(item):
@@ -9,15 +9,29 @@ def _check_item_type(item):
             "value": float(item.atom) if item.data_type == 'number' else item.atom
         }
     elif isinstance(item, PList):
-        return {
-            "type": item.type,
-            "items": _parse_predicate_arguments(item.items)
-        }
+        if item.head and item.tail:
+            return {
+                "type": item.type,
+                "head": item.head.atom,
+                "tail": item.tail.atom
+            }
+        else:
+            return {
+                "type": item.type,
+                "items": _parse_predicate_arguments(item.items)
+            }
     elif isinstance(item, Predicate):
         return {
             "type": item.type,
             "name": item.name,
             "arguments": _parse_condition(item)
+        }
+    elif isinstance(item, Condition):
+        return {
+            "type": item.type,
+            "right_side": _parse_predicate_arguments(item.right_side),
+            "separator": item.separator,
+            "left_side": _parse_predicate_arguments(item.left_side)
         }
 
 
@@ -60,6 +74,13 @@ class PrologParser:
                             "right_side": condition.right_side,
                             "left_side": condition.left_side,
                             "separator": condition.separator
+                        })
+                    elif isinstance(condition, ConditionStatement):
+                        conditions.append({
+                            "type": "condition_statement",
+                            "if_condition": _check_item_type(condition.if_condition),
+                            "then_clause": [_check_item_type(item) for item in condition.then_clause],
+                            "else_clause": [_check_item_type(item) for item in condition.else_clause]
                         })
 
                 self._output_json.append({
