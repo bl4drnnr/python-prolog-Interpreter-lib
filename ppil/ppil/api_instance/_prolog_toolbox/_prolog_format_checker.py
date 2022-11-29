@@ -1,5 +1,5 @@
 import re
-from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition
+from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
 from ppil.ppil.api_instance._variables import CONDITION_SEPARATORS
 
 ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+\'-\|]"
@@ -107,6 +107,32 @@ class PrologFormatChecker:
         return PList(list_of_arguments)
 
     def _check_conditions(self):
+        for item in self._parsed_json:
+            if isinstance(item, Fact):
+                for c in item.conditions:
+                    if isinstance(c, PList):
+                        left_separator_index = None
+                        right_separator_index = None
+                        clause_separator_index = None
+
+                        for index, k in enumerate(c.items):
+                            if \
+                                    isinstance(k, Atom) and \
+                                    isinstance(c.items[index + 1], Atom) and \
+                                    k.atom == '-' and \
+                                    c.items[index + 1].atom == '>':
+                                left_separator_index = index
+                                right_separator_index = index + 1
+                            if isinstance(k, Atom) and k.atom == ';':
+                                clause_separator_index = index
+
+                        condition_statement = c.items[:left_separator_index]
+                        then_clause = c.items[right_separator_index:][:clause_separator_index - len(condition_statement)]
+                        else_clause = c.items[right_separator_index:][clause_separator_index - len(condition_statement):]
+
+                        c.items.append(ConditionStatement(condition_statement, then_clause, else_clause))
+                        item.conditions.remove(c)
+
         for item in self._parsed_json:
             if isinstance(item, Fact):
                 fact_atoms = []

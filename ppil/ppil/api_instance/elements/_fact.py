@@ -14,3 +14,10 @@ class Fact:
         self.arguments = arguments
         self.joins = joins
         self.conditions = conditions
+
+    def __str__(self):
+        return f"Fact - " \
+               f"name: {self.name}, " \
+               f"arguments: {self.arguments}, " \
+               f"joins: {self.joins}, " \
+               f"conditions: {self.conditions}"

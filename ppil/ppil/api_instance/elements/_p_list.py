@@ -7,3 +7,9 @@ class PList:
         self.items = items
         self.head = head
         self.tail = tail
+
+    def __str__(self):
+        return f"PList - " \
+               f"items: {self.items}, " \
+               f"head: {self.head}, " \
+               f"tail: {self.tail}"
