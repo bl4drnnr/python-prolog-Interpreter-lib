@@ -9,10 +9,17 @@ def _check_item_type(item):
             "value": float(item.atom) if item.data_type == 'number' else item.atom
         }
     elif isinstance(item, PList):
-        return {
-            "type": item.type,
-            "items": _parse_predicate_arguments(item.items)
-        }
+        if item.head and item.tail:
+            return {
+                "type": item.type,
+                "head": item.head.atom,
+                "tail": item.tail.atom
+            }
+        else:
+            return {
+                "type": item.type,
+                "items": _parse_predicate_arguments(item.items)
+            }
     elif isinstance(item, Predicate):
         return {
             "type": item.type,
