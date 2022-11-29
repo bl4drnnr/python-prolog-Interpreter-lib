@@ -16,10 +16,8 @@ def _check_item_type(item):
     elif isinstance(item, Predicate):
         return {
             "type": item.type,
-            "body": {
-                "name": item.name,
-                "arguments": _parse_condition(item)
-            }
+            "name": item.name,
+            "arguments": _parse_condition(item)
         }
 
 
@@ -43,10 +41,8 @@ class PrologParser:
             if item.type == 'predicate':
                 self._output_json.append({
                     "type": item.type,
-                    "body": {
-                        "name": item.name,
-                        "arguments": _parse_predicate_arguments(item.arguments)
-                    }
+                    "name": item.name,
+                    "arguments": _parse_predicate_arguments(item.arguments)
                 })
             elif item.type == 'fact':
                 conditions = []
@@ -55,10 +51,8 @@ class PrologParser:
                     if isinstance(condition, Predicate):
                         conditions.append({
                             "type": condition.type,
-                            "body": {
-                                "name": condition.name,
-                                "arguments": _parse_condition(condition)
-                            }
+                            "name": condition.name,
+                            "arguments": _parse_condition(condition)
                         })
                     elif isinstance(condition, Condition):
                         conditions.append({
@@ -70,12 +64,10 @@ class PrologParser:
 
                 self._output_json.append({
                     "type": item.type,
-                    "body": {
-                        "name": item.arguments.name,
-                        "arguments": _parse_predicate_arguments(item.arguments.arguments),
-                        "joins": item.joins,
-                        "conditions": conditions
-                    }
+                    "name": item.arguments.name,
+                    "arguments": _parse_predicate_arguments(item.arguments.arguments),
+                    "joins": item.joins,
+                    "conditions": conditions
                 })
 
         return self._output_json
