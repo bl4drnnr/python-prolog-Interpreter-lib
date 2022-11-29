@@ -11,7 +11,7 @@ def _check_item_type(item):
     elif item.get('type') == 'predicate':
         return Predicate(item.get('name'), _parse_predicate(item))
     elif item.get('type') == 'condition':
-        return Condition(item.get('left_side'), item.get('separator'), item.get('right_sde'))
+        return Condition(item.get('left_side'), item.get('separator'), item.get('right_side'))
 
 
 def _parse_predicate(predicate):

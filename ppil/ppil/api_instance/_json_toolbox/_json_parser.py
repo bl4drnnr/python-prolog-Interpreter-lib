@@ -4,19 +4,29 @@ from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition
 def _check_item_type(item):
     if isinstance(item, list):
         return [_check_item_type(i) for i in item]
+
     elif isinstance(item, Atom):
         if item.data_type == 'string':
             return f"'{item.atom}',"
         elif item.data_type in ['number', 'variable', 'atom']:
             return f"{item.atom},"
+    
     elif isinstance(item, PList):
         return _parse_predicate_arguments(item.items)
+
     elif isinstance(item, Predicate):
         serialized_text = str(_parse_predicate_arguments(item.arguments))[1:-1]
         serialized_text = serialized_text.replace('\'', '')
         return f"{item.name}({serialized_text})"
+
     elif item.get('type') == 'list':
         return [str(s) for s in item.get('items')]
+
+    elif item.get('type') == 'atom':
+        if item.get('data_type') == 'string':
+            return f"'{item.get('atom')}',"
+        elif item.get('data_type') in ['number', 'variable', 'atom']:
+            return f"{item.get('atom')},"
 
 
 def _parse_predicate_arguments(arguments):
