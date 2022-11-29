@@ -4,6 +4,7 @@ from ppil.ppil.api_instance.elements import PList, Atom, Predicate
 def _check_item_type(item):
     if isinstance(item, Atom):
         return {
+            "type": item.type,
             "data_type": item.data_type,
             "value": float(item.atom) if item.data_type == 'number' else item.atom
         }

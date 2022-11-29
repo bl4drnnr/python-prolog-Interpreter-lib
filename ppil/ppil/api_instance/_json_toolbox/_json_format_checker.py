@@ -4,8 +4,8 @@ from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom
 
 
 def _check_item_type(item):
-    if isinstance(item, str):
-        return Atom(item)
+    if item.get('type') == 'atom':
+        return Atom(item.get('value'), item.get('data_type'))
     elif item.get('type') == 'list':
         return PList(item.get('items'))
     elif item.get('type') == 'predicate':

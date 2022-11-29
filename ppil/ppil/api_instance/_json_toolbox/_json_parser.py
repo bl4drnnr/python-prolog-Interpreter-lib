@@ -2,12 +2,13 @@ from ppil.ppil.api_instance.elements import PList, Atom, Predicate
 
 
 def _check_item_type(item):
-    if isinstance(item, str):
-        return item
-    elif isinstance(item, list):
+    if isinstance(item, list):
         return [_check_item_type(i) for i in item]
     elif isinstance(item, Atom):
-        return item.atom
+        if item.data_type == 'string':
+            return f"'{item.atom}',"
+        elif item.data_type in ['number', 'variable', 'atom']:
+            return f"{item.atom},"
     elif isinstance(item, PList):
         return _parse_predicate_arguments(item.items)
     elif isinstance(item, Predicate):
@@ -20,7 +21,12 @@ def _check_item_type(item):
 
 def _parse_predicate_arguments(arguments):
     iter_items = arguments if isinstance(arguments, list) else arguments.items
-    return [_check_item_type(arg) for arg in iter_items]
+
+    parsed_string = ''
+    for arg in iter_items:
+        parsed_string += _check_item_type(arg)
+
+    return parsed_string[:-1]
 
 
 def _serialize_arguments(arguments):
