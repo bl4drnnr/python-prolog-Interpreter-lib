@@ -4,8 +4,8 @@ from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom
 
 
 def _check_item_type(item):
-    if isinstance(item, str):
-        return Atom(item)
+    if item.get('type') == 'atom':
+        return Atom(item.get('value'), item.get('data_type'))
     elif item.get('type') == 'list':
         return PList(item.get('items'))
     elif item.get('type') == 'predicate':
@@ -31,8 +31,15 @@ class JsonFormatChecker:
         }
 
     def check_json_format(self, data):
+        self._reset_data()
         self._check_items_format(data)
         return self._parsed_data
+
+    def _reset_data(self):
+        self._parsed_data = {
+            'predicates': [],
+            'facts': []
+        }
 
     def _check_items_format(self, data):
         if not data.get('data'):

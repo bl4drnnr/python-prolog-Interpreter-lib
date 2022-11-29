@@ -24,6 +24,8 @@ class Converter:
 
     def json_to_prolog(self, input_json_data):
         try:
+            self._output_program = None
+
             json_data = self._json_format_checker.check_json_format(input_json_data)
             self._output_program = self._json_parser.parse_json(json_data)
 
@@ -39,6 +41,8 @@ class Converter:
 
     def prolog_to_json(self, input_prolog_data):
         try:
+            self._output_program = None
+
             prolog_data = self._prolog_format_checker.check_prolog_format(input_prolog_data)
             self._output_program = self._prolog_parser.parse_prolog(prolog_data)
 

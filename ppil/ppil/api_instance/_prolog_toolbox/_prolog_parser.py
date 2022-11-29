@@ -2,10 +2,12 @@ from ppil.ppil.api_instance.elements import PList, Atom, Predicate
 
 
 def _check_item_type(item):
-    if isinstance(item, str):
-        return item
-    elif isinstance(item, Atom):
-        return item.atom
+    if isinstance(item, Atom):
+        return {
+            "type": item.type,
+            "data_type": item.data_type,
+            "value": float(item.atom) if item.data_type == 'number' else item.atom
+        }
     elif isinstance(item, PList):
         return {
             "type": item.type,
@@ -35,6 +37,8 @@ class PrologParser:
         self._output_json = []
 
     def parse_prolog(self, prolog_data):
+        self._reset_data()
+
         for item in prolog_data:
             if item.type == 'predicate':
                 self._output_json.append({
@@ -67,3 +71,6 @@ class PrologParser:
                 })
 
         return self._output_json
+
+    def _reset_data(self):
+        self._output_json = []
