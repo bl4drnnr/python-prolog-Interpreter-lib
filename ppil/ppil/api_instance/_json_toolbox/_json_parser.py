@@ -10,30 +10,20 @@ def _check_item_type(item):
             return f"'{item.atom}',"
         elif item.data_type in ['number', 'variable', 'atom']:
             return f"{item.atom},"
-    
+
     elif isinstance(item, PList):
-        return _parse_predicate_arguments(item.items)
+        return f"[{_parse_predicate_arguments(item.items)}]]"
 
     elif isinstance(item, Predicate):
         serialized_text = str(_parse_predicate_arguments(item.arguments))[1:-1]
         serialized_text = serialized_text.replace('\'', '')
         return f"{item.name}({serialized_text})"
 
-    elif item.get('type') == 'list':
-        return [str(s) for s in item.get('items')]
-
-    elif item.get('type') == 'atom':
-        if item.get('data_type') == 'string':
-            return f"'{item.get('atom')}',"
-        elif item.get('data_type') in ['number', 'variable', 'atom']:
-            return f"{item.get('atom')},"
-
 
 def _parse_predicate_arguments(arguments):
-    iter_items = arguments if isinstance(arguments, list) else arguments.items
-
     parsed_string = ''
-    for arg in iter_items:
+
+    for arg in arguments:
         parsed_string += _check_item_type(arg)
 
     return parsed_string[:-1]

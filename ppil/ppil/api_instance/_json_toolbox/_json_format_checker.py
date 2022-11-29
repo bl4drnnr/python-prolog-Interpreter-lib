@@ -7,7 +7,7 @@ def _check_item_type(item):
     if item.get('type') == 'atom':
         return Atom(item.get('value'), item.get('data_type'))
     elif item.get('type') == 'list':
-        return PList(item.get('items'))
+        return PList([_check_item_type(i) for i in item.get('items')])
     elif item.get('type') == 'predicate':
         return Predicate(item.get('name'), _parse_predicate(item))
     elif item.get('type') == 'condition':
