@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition
+from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition, ConditionStatement
 
 
 def _check_item_type(item):
@@ -67,6 +67,13 @@ class PrologParser:
                             "right_side": condition.right_side,
                             "left_side": condition.left_side,
                             "separator": condition.separator
+                        })
+                    elif isinstance(condition, ConditionStatement):
+                        conditions.append({
+                            "type": "condition_statement",
+                            "if_condition": ''.join([atom.atom for atom in condition.if_condition]),
+                            "then_clause": [_check_item_type(item) for item in condition.then_clause],
+                            "else_clause": [_check_item_type(item) for item in condition.else_clause]
                         })
 
                 self._output_json.append({
