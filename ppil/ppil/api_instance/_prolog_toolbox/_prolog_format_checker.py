@@ -1,8 +1,9 @@
 import re
 from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom
 
-ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+]"
+ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+\']"
 NUMBER_REGEX = "^[0-9]*$"
+VARIABLE_REGEX = r"^[A-Z_][A-Za-z0-9_]*$"
 
 
 def _parse_atom(atoms):
@@ -74,7 +75,16 @@ class PrologFormatChecker:
         functor = self._pop_current_prolog_element()
 
         if self._get_current_prolog_element() != "(":
-            return Atom(functor)
+            if functor == '\'':
+                elem = self._pop_current_prolog_element()
+                self._pop_current_prolog_element()
+                return Atom(elem, 'string')
+            elif functor.isdigit():
+                return Atom(functor, 'number')
+            elif re.match(VARIABLE_REGEX, functor) is not None:
+                return Atom(functor, 'variable')
+            else:
+                return Atom(functor, 'atom')
 
         self._pop_current_prolog_element()
         return Predicate(functor, self._parse_arguments(")"))

@@ -2,10 +2,11 @@ from ppil.ppil.api_instance.elements import PList, Atom, Predicate
 
 
 def _check_item_type(item):
-    if isinstance(item, str):
-        return item
-    elif isinstance(item, Atom):
-        return item.atom
+    if isinstance(item, Atom):
+        return {
+            "data_type": item.data_type,
+            "value": float(item.atom) if item.data_type == 'number' else item.atom
+        }
     elif isinstance(item, PList):
         return {
             "type": item.type,
