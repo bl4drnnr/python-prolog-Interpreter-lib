@@ -26,6 +26,13 @@ def _check_item_type(item):
             "name": item.name,
             "arguments": _parse_condition(item)
         }
+    elif isinstance(item, Condition):
+        return {
+            "type": item.type,
+            "right_side": _parse_predicate_arguments(item.right_side),
+            "separator": item.separator,
+            "left_side": _parse_predicate_arguments(item.left_side)
+        }
 
 
 def _parse_predicate_arguments(arguments):
@@ -71,7 +78,7 @@ class PrologParser:
                     elif isinstance(condition, ConditionStatement):
                         conditions.append({
                             "type": "condition_statement",
-                            "if_condition": ''.join([atom.atom for atom in condition.if_condition]),
+                            "if_condition": _check_item_type(condition.if_condition),
                             "then_clause": [_check_item_type(item) for item in condition.then_clause],
                             "else_clause": [_check_item_type(item) for item in condition.else_clause]
                         })

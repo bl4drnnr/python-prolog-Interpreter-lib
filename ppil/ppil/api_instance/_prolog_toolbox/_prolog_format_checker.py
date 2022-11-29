@@ -130,7 +130,17 @@ class PrologFormatChecker:
                         then_clause = c.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
                         else_clause = c.items[right_separator_index:][clause_separator_index - len(condition_statement):]
 
-                        item.conditions.append(ConditionStatement(condition_statement, then_clause, else_clause))
+                        condition = None
+                        for index, condition_atom in enumerate(condition_statement):
+                            if condition_atom.atom in CONDITION_SEPARATORS:
+                                condition = Condition(
+                                    condition_statement[:index],
+                                    condition_atom.atom,
+                                    condition_statement[index + 1:]
+                                )
+                                break
+
+                        item.conditions.append(ConditionStatement(condition, then_clause, else_clause))
                         item.conditions.remove(c)
 
         for item in self._parsed_json:
