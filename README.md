@@ -249,14 +249,24 @@ that describes `Prolog` data. Here is the example of data in previous example co
 {
     "data": [
         {
-            "body": {
-                "arguments": [
-                    "arg1",
-                    "arg2",
-                    "arg3"
-                ],
-                "name": "predicate_name"
-            },
+            "arguments": [
+                {
+                    "data_type": "atom",
+                    "type": "atom",
+                    "value": "arg1"
+                },
+                {
+                    "data_type": "atom",
+                    "type": "atom",
+                    "value": "arg2"
+                },
+                {
+                    "data_type": "atom",
+                    "type": "atom",
+                    "value": "arg3"
+                }
+            ],
+            "name": "predicate_name",
             "type": "predicate"
         }
     ]
@@ -268,11 +278,20 @@ The 2 _main_ types that are allowed to use are `predicate` and `fact`.
 Format of `predicate`:
 ```json
 {
-   "body": {
-      "arguments": "<LIST_OF_ARGUMENTS>",
-      "name": "<NAME_OF_PREDICATE>"
-   },
+   "arguments": "<LIST_OF_ARGUMENTS>",
+   "name": "<NAME_OF_PREDICATE>",
    "type": "predicate"
+}
+```
+
+As you can see, every value within predicate (`atom`) also has its own format.
+In this case type `atom` looks like this:
+
+```json
+{
+   "data_type": "STRING|VARIABLE|NUMBER|ATOM",
+   "type": "atom",
+   "value": "<VALUE_OF_ATOM>"
 }
 ```
 
@@ -284,44 +303,66 @@ endpoint, we will get next result:
 {
     "data": [
         {
-            "body": {
-                "arguments": [
-                    "arg1",
-                    "arg2",
-                    "arg3"
-                ],
-                "conditions": [
-                    {
-                        "body": {
-                            "arguments": [
-                                "2",
-                                "4",
-                                "5"
-                            ],
-                            "name": "test"
+            "arguments": [
+                {
+                    "data_type": "atom",
+                    "type": "atom",
+                    "value": "arg1"
+                },
+                {
+                    "data_type": "atom",
+                    "type": "atom",
+                    "value": "arg2"
+                },
+                {
+                    "data_type": "atom",
+                    "type": "atom",
+                    "value": "arg3"
+                }
+            ],
+            "conditions": [
+                {
+                    "arguments": [
+                        {
+                            "data_type": "number",
+                            "type": "atom",
+                            "value": 2.0
                         },
-                        "type": "predicate"
-                    },
-                    {
-                        "body": {
-                            "arguments": [
+                        {
+                            "data_type": "number",
+                            "type": "atom",
+                            "value": 4.0
+                        },
+                        {
+                            "data_type": "number",
+                            "type": "atom",
+                            "value": 5.0
+                        }
+                    ],
+                    "name": "test",
+                    "type": "predicate"
+                },
+                {
+                    "arguments": [
+                        {
+                            "items": [
                                 {
-                                    "items": [
-                                        "lists"
-                                    ],
-                                    "type": "list"
+                                    "data_type": "string",
+                                    "type": "atom",
+                                    "value": "lists"
                                 }
                             ],
-                            "name": "test2"
-                        },
-                        "type": "predicate"
-                    }
-                ],
-                "joins": [
-                    ","
-                ],
-                "name": "predicate"
-            },
+                            "type": "list"
+                        }
+                    ],
+                    "name": "test2",
+                    "type": "predicate"
+                }
+            ],
+            "joins": [
+                ","
+            ],
+            "name": "predicate",
             "type": "fact"
         }
     ]
@@ -331,12 +372,10 @@ endpoint, we will get next result:
 So, format of facts looks like this:
 ```json
 {
-   "body": {
-      "arguments": "<LIST_OF_FACTS_ARGUMENTS>",
-      "conditions": "<LIST_OF_FACTS_BODY_TERMS>",
-      "joins": "<LIST_OF_JOINS_THAT_JOIN_TERMS>",
-      "name": "<NAME_OF_FACT>"
-   },
+   "arguments": "<LIST_OF_FACTS_ARGUMENTS>",
+   "conditions": "<LIST_OF_FACTS_BODY_TERMS>",
+   "joins": "<LIST_OF_JOINS_THAT_JOIN_TERMS>",
+   "name": "<NAME_OF_FACT>",
    "type": "fact"
 }
 ```

@@ -53,8 +53,9 @@ class PrologFormatChecker:
                         separator = atom.atom
                     fact_atom_str += atom.atom
 
-                [left_side, right_side] = fact_atom_str.split(separator)
-                item.conditions.append(Condition(left_side, separator, right_side))
+                if len(separator):
+                    [left_side, right_side] = fact_atom_str.split(separator)
+                    item.conditions.append(Condition(left_side, separator, right_side))
 
         return self._parsed_json
 
