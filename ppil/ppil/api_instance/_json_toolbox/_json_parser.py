@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance.elements import PList, Atom, Predicate
+from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition
 
 
 def _check_item_type(item):
@@ -70,7 +70,11 @@ class JsonParser:
 
             for index, condition in enumerate(fact.conditions):
                 join = fact.joins[index] if index < len(fact.joins) else ''
-                serialized_arguments = _serialize_arguments(_parse_predicate_arguments(condition.arguments))
-                self._output_program += f"{condition.name}({serialized_arguments}){join}"
+
+                if isinstance(condition, Predicate):
+                    serialized_arguments = _serialize_arguments(_parse_predicate_arguments(condition.arguments))
+                    self._output_program += f"{condition.name}({serialized_arguments}){join}"
+                elif isinstance(condition, Condition):
+                    self._output_program += f"{condition.left_side}{condition.separator}{condition.right_side}{join}"
 
             self._output_program += ".\n"

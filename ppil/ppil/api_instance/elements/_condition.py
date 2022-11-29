@@ -1,5 +1,5 @@
 class Condition:
-    def __init__(self, right_side: str, separator: str, left_side: str):
+    def __init__(self, left_side, separator, right_side):
         self.type = "condition"
         self.right_side = right_side
         self.separator = separator

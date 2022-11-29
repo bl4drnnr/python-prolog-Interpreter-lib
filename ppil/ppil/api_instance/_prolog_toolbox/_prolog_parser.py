@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance.elements import PList, Atom, Predicate
+from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition
 
 
 def _check_item_type(item):
@@ -16,10 +16,8 @@ def _check_item_type(item):
     elif isinstance(item, Predicate):
         return {
             "type": item.type,
-            "body": {
-                "name": item.name,
-                "arguments": _parse_condition(item)
-            }
+            "name": item.name,
+            "arguments": _parse_condition(item)
         }
 
 
@@ -43,31 +41,33 @@ class PrologParser:
             if item.type == 'predicate':
                 self._output_json.append({
                     "type": item.type,
-                    "body": {
-                        "name": item.name,
-                        "arguments": _parse_predicate_arguments(item.arguments)
-                    }
+                    "name": item.name,
+                    "arguments": _parse_predicate_arguments(item.arguments)
                 })
             elif item.type == 'fact':
                 conditions = []
 
                 for condition in item.conditions:
-                    conditions.append({
-                        "type": condition.type,
-                        "body": {
+                    if isinstance(condition, Predicate):
+                        conditions.append({
+                            "type": condition.type,
                             "name": condition.name,
                             "arguments": _parse_condition(condition)
-                        }
-                    })
+                        })
+                    elif isinstance(condition, Condition):
+                        conditions.append({
+                            "type": condition.type,
+                            "right_side": condition.right_side,
+                            "left_side": condition.left_side,
+                            "separator": condition.separator
+                        })
 
                 self._output_json.append({
                     "type": item.type,
-                    "body": {
-                        "name": item.arguments.name,
-                        "arguments": _parse_predicate_arguments(item.arguments.arguments),
-                        "joins": item.joins,
-                        "conditions": conditions
-                    }
+                    "name": item.arguments.name,
+                    "arguments": _parse_predicate_arguments(item.arguments.arguments),
+                    "joins": item.joins,
+                    "conditions": conditions
                 })
 
         return self._output_json
