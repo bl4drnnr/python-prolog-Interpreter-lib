@@ -38,7 +38,7 @@ class PrologFormatChecker:
         while len(self._prolog_string) > 0:
             self._parsed_json.append(self._parse_item())
 
-        self._check_conditions()
+        self._check_condition_statements()
         self._check_lists()
 
         return [item for item in self._parsed_json if not isinstance(item, Atom)]
@@ -106,7 +106,7 @@ class PrologFormatChecker:
         self._pop_current_prolog_element()
         return PList(list_of_arguments)
 
-    def _check_conditions(self):
+    def _check_condition_statements(self):
         for item in self._parsed_json:
             if isinstance(item, Fact):
                 for c in item.conditions:
@@ -127,16 +127,18 @@ class PrologFormatChecker:
                                 clause_separator_index = index
 
                         condition_statement = c.items[:left_separator_index]
-                        then_clause = c.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
-                        else_clause = c.items[right_separator_index:][clause_separator_index - len(condition_statement):]
+                        else_clause = c.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
+                        then_clause = c.items[right_separator_index:][clause_separator_index - len(condition_statement):]
 
                         condition = None
                         for index, condition_atom in enumerate(condition_statement):
                             if condition_atom.atom in CONDITION_SEPARATORS:
+                                right_side = [item.atom for item in condition_statement[index + 1:]]
+                                left_side = [item.atom for item in condition_statement[:index]]
                                 condition = Condition(
-                                    condition_statement[:index],
+                                    ''.join(left_side),
                                     condition_atom.atom,
-                                    condition_statement[index + 1:]
+                                    ''.join(right_side)
                                 )
                                 break
 
