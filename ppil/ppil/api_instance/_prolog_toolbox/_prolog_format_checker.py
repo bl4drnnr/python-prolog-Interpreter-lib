@@ -1,6 +1,6 @@
 import re
 from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
-from ppil.ppil.api_instance._variables import CONDITION_SEPARATORS
+from ppil.ppil.api_instance._variables import CONDITION_SEPARATORS, CONDITION_STRING_SEPARATOR
 
 ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+\'-\|]"
 NUMBER_REGEX = "^[0-9]*$"
@@ -109,7 +109,7 @@ class PrologFormatChecker:
     def _check_condition_statements(self):
         for item in self._parsed_json:
             if isinstance(item, Fact):
-                for c in item.conditions:
+                for idx, c in enumerate(item.conditions):
                     if isinstance(c, PList):
                         left_separator_index = None
                         right_separator_index = None
@@ -133,36 +133,46 @@ class PrologFormatChecker:
                         condition = None
                         for index, condition_atom in enumerate(condition_statement):
                             if condition_atom.atom in CONDITION_SEPARATORS:
-                                right_side = [item.atom for item in condition_statement[index + 1:]]
-                                left_side = [item.atom for item in condition_statement[:index]]
-                                condition = Condition(
-                                    ''.join(left_side),
-                                    condition_atom.atom,
-                                    ''.join(right_side)
-                                )
+                                right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
+                                left_side = ''.join([item.atom for item in condition_statement[:index]])
+                                condition = Condition(left_side, condition_atom.atom, right_side)
                                 break
 
-                        item.conditions.append(ConditionStatement(condition, then_clause, else_clause))
-                        item.conditions.remove(c)
+                        item_conditions_copy = item.conditions[:]
 
-        for item in self._parsed_json:
-            if isinstance(item, Fact):
+                        item_conditions_copy.insert(idx, ConditionStatement(condition, then_clause, else_clause))
+                        item_conditions_copy.remove(c)
+
+                        item.conditions = item_conditions_copy
+
                 fact_atoms = []
-                separator = ""
 
-                for condition in item.conditions:
-                    if isinstance(condition, Atom):
+                for index, condition in enumerate(item.conditions):
+                    current_index = index if index + 1 == len(item.conditions) else index + 1
+
+                    if isinstance(condition, Atom) and isinstance(item.conditions[current_index], Atom):
                         fact_atoms.append(condition)
+                    elif isinstance(condition, Atom) and not isinstance(item.conditions[current_index], Atom):
+                        fact_atoms.append(condition)
+                        fact_atoms.append(Atom(CONDITION_STRING_SEPARATOR))
 
                 fact_atom_str = ""
-                for atom in fact_atoms:
-                    if atom.atom in CONDITION_SEPARATORS:
-                        separator = atom.atom
-                    fact_atom_str += atom.atom
+                if len(fact_atoms):
+                    for atom in fact_atoms:
+                        fact_atom_str += atom.atom
 
-                if len(separator):
-                    [left_side, right_side] = fact_atom_str.split(separator)
-                    item.conditions.append(Condition(left_side, separator, right_side))
+                if len(fact_atom_str):
+                    fact_atom_str = fact_atom_str.split(CONDITION_STRING_SEPARATOR)
+
+                    for condition in fact_atom_str:
+                        separator = None
+
+                        for condition_symbol in condition:
+                            if condition_symbol in CONDITION_SEPARATORS:
+                                separator = condition_symbol
+
+                        [left_side, right_side] = condition.split(separator)
+                        item.conditions.append(Condition(left_side, separator, right_side))
 
     def _check_lists(self):
         for item in self._parsed_json:
