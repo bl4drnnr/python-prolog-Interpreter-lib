@@ -146,15 +146,18 @@ class PrologFormatChecker:
                         item.conditions = item_conditions_copy
 
                 fact_atoms = []
+                not_atom_index = 0
 
                 for index, condition in enumerate(item.conditions):
                     current_index = index if index + 1 == len(item.conditions) else index + 1
 
                     if isinstance(condition, Atom) and isinstance(item.conditions[current_index], Atom):
-                        fact_atoms.append(condition)
+                        fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
                     elif isinstance(condition, Atom) and not isinstance(item.conditions[current_index], Atom):
-                        fact_atoms.append(condition)
+                        fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
                         fact_atoms.append(Atom(CONDITION_STRING_SEPARATOR))
+                    if not isinstance(condition, Atom):
+                        not_atom_index += 1
 
                 fact_atom_str = ""
                 if len(fact_atoms):
