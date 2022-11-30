@@ -15,10 +15,17 @@ def _check_item_type(item):
         if item.head and item.tail:
             return f"[{item.head}|{item.tail}],"
         else:
-            return f"[{_parse_predicate_arguments(item.items)}]]"
+            parsed_list = f"[{_parse_predicate_arguments(item.items)}]"
+            open_bracket = parsed_list.count('[')
+            close_bracket = parsed_list.count(']')
+
+            if open_bracket == close_bracket:
+                return parsed_list
+            else:
+                return parsed_list + "]" * (open_bracket - close_bracket)
 
     elif isinstance(item, Predicate):
-        serialized_text = str(_parse_predicate_arguments(item.arguments))[1:-1]
+        serialized_text = str(_parse_predicate_arguments(item.arguments))
         serialized_text = serialized_text.replace('\'', '')
         return f"{item.name}({serialized_text})"
 
@@ -26,10 +33,11 @@ def _check_item_type(item):
         return f"{item.left_side}{item.separator}{item.right_side}"
 
     elif isinstance(item, ConditionStatement):
+        # TODO TEMPORARY SOLUTION
         if_condition = _check_item_type(item.if_condition)
-        else_clause = _check_item_type(item.else_clause)
-        then_clause = _check_item_type(item.then_clause)
-        return f"{if_condition}->{else_clause};{then_clause}"
+        else_clause = [_check_item_type(i) for i in item.else_clause]
+        then_clause = [_check_item_type(i) for i in item.then_clause]
+        return f"{if_condition}->{','.join(else_clause)};{','.join(then_clause)}"
 
 
 def _parse_predicate_arguments(arguments):
@@ -38,7 +46,10 @@ def _parse_predicate_arguments(arguments):
     for arg in arguments:
         parsed_string += _check_item_type(arg)
 
-    return parsed_string[:-1]
+    if parsed_string[-1] == ',':
+        return parsed_string[:-1]
+    else:
+        return parsed_string
 
 
 def _serialize_arguments(arguments):

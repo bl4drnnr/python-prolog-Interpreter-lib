@@ -18,8 +18,8 @@ def _check_item_type(item):
     elif item.get('type') == 'condition_statement':
         return ConditionStatement(
             _check_item_type(item.get('if_condition')),
-            _parse_fact(item.get('then_clause')),
-            _parse_fact(item.get('else_clause'))
+            [_check_item_type(i) for i in item.get('then_clause')],
+            [_check_item_type(i) for i in item.get('else_clause')]
         )
 
 
