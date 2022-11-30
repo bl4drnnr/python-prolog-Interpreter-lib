@@ -160,14 +160,23 @@ class PrologFormatChecker:
                         not_atom_index += 1
 
                 fact_atom_str = ""
+                replace_indexes = []
                 if len(fact_atoms):
                     for atom in fact_atoms:
-                        fact_atom_str += atom.atom
+                        if isinstance(atom, Atom):
+                            fact_atom_str += atom.atom
+                        elif atom.get('condition'):
+                            fact_atom_str += atom['condition'].atom
+
+                    for atom in fact_atoms:
+                        if not isinstance(atom, Atom):
+                            if atom['not_atom_index'] not in replace_indexes:
+                                replace_indexes.append(atom['not_atom_index'])
 
                 if len(fact_atom_str):
                     fact_atom_str = fact_atom_str.split(CONDITION_STRING_SEPARATOR)
 
-                    for condition in fact_atom_str:
+                    for index, condition in enumerate(fact_atom_str):
                         separator = None
 
                         for condition_symbol in condition:
@@ -175,7 +184,7 @@ class PrologFormatChecker:
                                 separator = condition_symbol
 
                         [left_side, right_side] = condition.split(separator)
-                        item.conditions.append(Condition(left_side, separator, right_side))
+                        item.conditions.insert(replace_indexes[index], Condition(left_side, separator, right_side))
 
     def _check_lists(self):
         for item in self._parsed_json:
