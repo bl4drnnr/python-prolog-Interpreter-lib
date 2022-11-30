@@ -29,9 +29,9 @@ def _check_item_type(item):
     elif isinstance(item, Condition):
         return {
             "type": item.type,
-            "right_side": _parse_predicate_arguments(item.right_side),
+            "right_side": item.right_side,
             "separator": item.separator,
-            "left_side": _parse_predicate_arguments(item.left_side)
+            "left_side": item.left_side
         }
 
 

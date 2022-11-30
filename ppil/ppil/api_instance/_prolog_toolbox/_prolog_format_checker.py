@@ -133,10 +133,12 @@ class PrologFormatChecker:
                         condition = None
                         for index, condition_atom in enumerate(condition_statement):
                             if condition_atom.atom in CONDITION_SEPARATORS:
+                                right_side = [item.atom for item in condition_statement[index + 1:]]
+                                left_side = [item.atom for item in condition_statement[:index]]
                                 condition = Condition(
-                                    condition_statement[:index],
+                                    ''.join(left_side),
                                     condition_atom.atom,
-                                    condition_statement[index + 1:]
+                                    ''.join(right_side)
                                 )
                                 break
 

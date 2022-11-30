@@ -15,9 +15,6 @@ def _check_item_type(item):
         return Predicate(item.get('name'), _parse_predicate(item))
     elif item.get('type') == 'condition':
         return Condition(item.get('left_side'), item.get('separator'), item.get('right_side'))
-    # TODO Continue here
-    # Prolog to JSON for condition statements works just find
-    # Done with JSON to Prolog for condition statements
     elif item.get('type') == 'condition_statement':
         return ConditionStatement(
             _check_item_type(item.get('if_condition')),
