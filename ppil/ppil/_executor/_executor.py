@@ -4,6 +4,7 @@ from inspect import getsourcefile
 from os.path import abspath
 
 from ppil.ppil._api_response_handler import ExecutionError
+from ppil.ppil._variables import EXECUTION_RESULT_SPLITER
 
 
 def _get_fact_head_and_conditions(fact):
@@ -22,6 +23,7 @@ def _wrap_facts(prolog_program):
             result_output_pattern = ' '.join([
                 f"~q" for index, item in enumerate(fact_arguments.split(','))
             ])
+            result_output_pattern += EXECUTION_RESULT_SPLITER
 
             updated_prolog_program.append(
                 item.replace(
@@ -64,7 +66,7 @@ class Executor:
             source_code = source_code.replace('\n', '').strip()
 
         serialized_program = _wrap_facts(source_code)
-        serialized_program = '.'.join(serialized_program)
+        serialized_program = '.\n'.join(serialized_program) + '.'
 
         source_script_file.write(serialized_program)
         source_script_file.close()
@@ -74,7 +76,8 @@ class Executor:
             execution_result = subprocess.run([
                 'swipl', '-q', '-g', query, '-t', 'halt', prolog_source_path
             ], stdout=subprocess.PIPE)
-            results.append(execution_result.stdout.decode('utf-8'))
+            serialized_result = execution_result.stdout.decode('utf-8').split(EXECUTION_RESULT_SPLITER)
+            results.append(serialized_result[:-1])
 
         return results
 
