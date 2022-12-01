@@ -27,14 +27,9 @@ class ApiInstance:
         response = self._converter.json_to_prolog(self._request_data)
         return response.response, response.status_code
 
-    def _json_execute(self):
+    def _execute(self):
         self._request_data = request.get_json()
-        response = self._converter.json_execute(self._request_data)
-        return response.response, response.status_code
-
-    def _prolog_execute(self):
-        self._request_data = request.get_json()
-        response = self._converter.prolog_execute(self._request_data)
+        response = self._converter.execute(self._request_data)
         return response.response, response.status_code
 
     def run(self, **kwargs):
