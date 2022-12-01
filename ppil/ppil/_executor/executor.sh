@@ -1,3 +1,3 @@
 #!/bin/bash
 
-swipl -q -g 'mom(pat)' -t halt $1
+swipl -q -g $1 -t halt $2
