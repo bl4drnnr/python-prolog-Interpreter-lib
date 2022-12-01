@@ -32,6 +32,6 @@ class Executor:
         source_script_file.write(serialized_program)
         source_script_file.close()
 
-        execution_result = subprocess.check_call(f"{executor_path} %s" % prolog_source_path, shell=True)
+        execution_result = subprocess.run(f"{executor_path} %s" % prolog_source_path, shell=True, stdout=subprocess.PIPE)
 
-        return 'success'
+        return execution_result.stdout.decode('utf-8')
