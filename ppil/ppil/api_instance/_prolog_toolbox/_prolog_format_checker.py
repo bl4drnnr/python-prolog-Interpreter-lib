@@ -212,5 +212,6 @@ class PrologFormatChecker:
                         item_conditions_copy.remove(c)
                         item.conditions = item_conditions_copy
 
-                item.conditions = _find_all_conditions(item.conditions)
+                if len(item.conditions) > 1:
+                    item.conditions = _find_all_conditions(item.conditions)
                 item.arguments = _check_argument_lists(item.arguments)

@@ -6,7 +6,7 @@ def _check_item_type(item):
         return {
             "type": item.type,
             "data_type": item.data_type,
-            "value": float(item.atom) if item.data_type == 'number' else item.atom
+            "value": int(item.atom) if item.data_type == 'number' else item.atom
         }
     elif isinstance(item, PList):
         if item.head and item.tail:

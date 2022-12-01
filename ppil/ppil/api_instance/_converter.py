@@ -10,7 +10,6 @@ from ._executor import Executor
 from ._json_toolbox import JsonParser, JsonFormatChecker
 from ._prolog_toolbox import PrologParser, PrologFormatChecker
 
-from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
 
 class Converter:
     def __init__(self):
