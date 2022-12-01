@@ -1,1 +1,1 @@
-from .ppil import ApiInstance, KnowledgeDatabase
+from .ppil import ApiInstance

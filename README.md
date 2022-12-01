@@ -3,14 +3,12 @@
 1. [Python PROLOG Interpreter Library](#python-prolog-interpreter-library)
 2. [Installation and usage](#installation-and-example-of-usage)
    1. [Installation](#installation)
-   2. [Example of library usage](#example-of-library-usage)
-   3. [Example of API usage](#example-of-api-usage)
+   2. [Example of API usage](#example-of-api-usage)
 3. [Introduction to Prolog](#introduction-to-prolog)
    1. [Data types](#data-types)
    2. [Rules and facts](#rules-and-facts)
 4. [Documentation](#documentation)
-   1. [Usage of library](#usage-of-library)
-   2. [Usage of API](#usage-of-api)
+   1. [Usage of API](#usage-of-api)
 5. [References and contact](#references-and-contact)
 6. [Licence](#license)
 
@@ -20,7 +18,7 @@
 
 ## Python PROLOG Interpreter Library
 
-**PPIL** - is a simple `Python` witten library, that allows to use `Prolog` syntax within `Python`.
+**PPIL** - is a simple `Python` witten library, that allows convert `Prolog` to `JSON` and vice versa and compiles it on a server.
 
 Application is built from 3 different parts:
 - **Interactive CLI**
@@ -40,38 +38,6 @@ In order to install library, open up terminal in project folder and type:
 
 ```
 pip install ppil
-```
-
-### Example of library usage
-
-Here is example of usage and, at the same time, the way how you can test the program:
-
-```python
-from ppil import KnowledgeDatabase
-
-ancestors_payload = """
-   person(michael, john, ann, m, 19).
-   person(john, jeff, jenny, m, 56).
-   person(ann, andrew, ewa, f, 45).
-   person(jordan, andrew, ewa, m, 48).
-   person(andrew, person1, person2, m, 82).
-   person(ewa, person3, person4, f, 75).
-   person(jeff, person5, person6, m, 81).
-   person(jenny, person7, person8, f, 77).
-   mom(X, Y) : -person(X, _, _, _, E), person(Y, _, W, _, L), W = X, M1 is L + 14, E >= M1.
-   father(X, Y) :- person(X, _, _, _, E), person(Y, W, _, _, L), W = X, M1 is L + 14, E >= M1.
-   brother(X, Y) :- person(X,B,C,D,_), person(Y,P,M,_,_), B = P, C = M, D = m, X \= Y.
-   sister(X, Y) :- person(X, Q, W, E, _), person(Y, A, B, _, _), Q = A, W = B, E = f, X \= Y.
-   grandmother(X, Y) :- (((mom(A, Y), mom(X, B)); (mom(X, A), father(B, Y))), A = B).
-   grandad(X, Y) :- (((father(A, Y), father(X, B)); (father(X, A), mom(B, Y))), A = B).
-"""
-
-query = """
-        osoba(ania, person7, person8, f, 77).
-"""
-
-ancestors_db = KnowledgeDatabase(ancestors_payload)
-solution = ancestors_db.find_solutions(query)
 ```
 
 ### Example of API usage
@@ -180,45 +146,6 @@ These predicates are not given a relational meaning and are only useful for the 
 ---
 
 ## Documentation
-
-### Usage of library
-
-To start use `Prolog`, first of all, you need to import it in your code:
-
-```python
-import ppil
-```
-
-Then, using library, create object of `KnowledgeDatabase` and pass a payload to it.
-
-```python
-from ppil import KnowledgeDatabase
-
-database_payload = """
-    is_tall(jack, yes).
-    is_tall(eric, no).
-    is_tall(johnny, yes).
-    is_tall(mark, no).
-"""
-
-goal = """
-        is_tall(Y, yes)
-"""
-
-database = KnowledgeDatabase(KnowledgeDatabase)
-solution = database.find_solutions(goal)
-```
-
-Now, you are free to go, use `.find_solutions` method in order to manipulate your database (referring to example above):
-
-```python
-assert len(solutions.get("Y")) == 2
-
-assert ("jack" in str(solution) for solution in solutions.get("Y"))
-assert ("johnny" in str(solution) for solution in solutions.get("Y"))
-```
-
-More examples and test you will find in the `tests` folder.
 
 ### Usage of API
 

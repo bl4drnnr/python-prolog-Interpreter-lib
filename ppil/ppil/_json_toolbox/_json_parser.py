@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance.elements import PList, Atom, Predicate, Condition, ConditionStatement
+from ppil.ppil.elements import PList, Atom, Predicate, Condition, ConditionStatement
 
 
 def _check_item_type(item):
