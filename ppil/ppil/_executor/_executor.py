@@ -54,6 +54,8 @@ class Executor:
         executor_path = f"{self._current_directory}/executor.sh"
 
         source_code = code['data']
+        source_code = source_code.replace('\n', '') if isinstance(source_code, str) else source_code
+
         code_query = code.get('query')
         source_script_file = open(prolog_source_path, 'w+')
 

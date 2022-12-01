@@ -1,5 +1,5 @@
 JSON_FORMAT_KEYS = ['predicate', 'fact']
-CONDITION_SEPARATORS = ['>', 'is', '<', '=<', '>=', '=:=', r'=\=', '=']
+CONDITION_SEPARATORS = ['=:=', r'=\=', r'\=', '=<', '>=', '=', '>', 'is', '<']
 AVAILABLE_ENDPOINTS = ['prolog-to-json', 'json-to-prolog', 'execute']
 CONDITION_STRING_SEPARATOR = '|condition_separator|'
 EXECUTION_RESULT_SPLITER = '|execution_result_spliter|'
