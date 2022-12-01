@@ -6,7 +6,6 @@ from ._api_response_handler import \
     ApiResponse, \
     ExecutionError
 from ._executor import Executor
-
 from ._json_toolbox import JsonParser, JsonFormatChecker
 from ._prolog_toolbox import PrologParser, PrologFormatChecker
 
@@ -21,6 +20,8 @@ class Converter:
 
         self._json_parser = JsonParser()
         self._prolog_parser = PrologParser()
+
+        self._executor = Executor(self._json_parser, self._json_format_checker)
 
     def json_to_prolog(self, input_json_data):
         try:
@@ -52,22 +53,9 @@ class Converter:
         except Exception as e:
             return ApiResponse(str(e), 500)
 
-    def json_execute(self, input_json_data):
+    def execute(self, input_json_data):
         try:
-            json_data = self._json_format_checker.check_json_format(input_json_data)
-            prolog_data = self._json_parser.parse_json(json_data)
-            self._execute_result = Executor.execute_code(prolog_data)
-
-            return ApiResponse(self._execute_result, 200)
-        except ExecutionError as ee:
-            return ee
-        except Exception as e:
-            return ApiResponse(str(e), 500)
-
-    def prolog_execute(self, input_prolog_data):
-        try:
-            prolog_data = self._prolog_format_checker.check_prolog_format(input_prolog_data)
-            self._execute_result = Executor.execute_code(prolog_data)
+            self._execute_result = self._executor.execute_code(input_json_data)
 
             return ApiResponse(self._execute_result, 200)
         except ExecutionError as ee:

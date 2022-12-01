@@ -4,4 +4,5 @@ venv
 __pycache__
 dist/
 ppil/ppil.egg-info
+source_script.pl
 test.py
