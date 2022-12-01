@@ -25,15 +25,13 @@ def _check_item_type(item):
                 return parsed_list + "]" * (open_bracket - close_bracket)
 
     elif isinstance(item, Predicate):
-        serialized_text = str(_parse_predicate_arguments(item.arguments))
-        serialized_text = serialized_text.replace('\'', '')
+        serialized_text = _parse_predicate_arguments(item.arguments)
         return f"{item.name}({serialized_text})"
 
     elif isinstance(item, Condition):
         return f"{item.left_side}{item.separator}{item.right_side}"
 
     elif isinstance(item, ConditionStatement):
-        # TODO TEMPORARY SOLUTION
         if_condition = _check_item_type(item.if_condition)
         else_clause = [_check_item_type(i) for i in item.else_clause]
         then_clause = [_check_item_type(i) for i in item.then_clause]

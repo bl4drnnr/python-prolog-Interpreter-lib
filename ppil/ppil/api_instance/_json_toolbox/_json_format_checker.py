@@ -1,4 +1,4 @@
-from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat, WrongConditionStatementFormat
+from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
 from ppil.ppil.api_instance._variables import JSON_FORMAT_KEYS
 from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
 
@@ -38,8 +38,7 @@ class JsonFormatChecker:
     def __init__(self):
         self._parsed_data = {
             'predicates': [],
-            'facts': [],
-            'condition_statements': []
+            'facts': []
         }
 
     def check_json_format(self, data):
