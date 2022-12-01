@@ -43,6 +43,8 @@ def _find_all_condition_statements(fact_condition):
 def _find_all_conditions(conditions):
     fact_atoms = []
     not_atom_index = 0
+    fact_atom_str = ""
+    replace_indexes = []
 
     for index, condition in enumerate(conditions):
         current_index = index if index + 1 == len(conditions) else index + 1
@@ -55,8 +57,6 @@ def _find_all_conditions(conditions):
         if not isinstance(condition, Atom):
             not_atom_index += 1
 
-    fact_atom_str = ""
-    replace_indexes = []
     for atom in fact_atoms:
         if isinstance(atom, Atom):
             fact_atom_str += atom.atom
@@ -64,9 +64,8 @@ def _find_all_conditions(conditions):
             fact_atom_str += atom['condition'].atom
 
     for atom in fact_atoms[::-1]:
-        if not isinstance(atom, Atom):
-            if atom['not_atom_index'] not in replace_indexes:
-                replace_indexes.append(atom['not_atom_index'])
+        if not isinstance(atom, Atom) and atom['not_atom_index'] not in replace_indexes:
+            replace_indexes.append(atom['not_atom_index'])
 
     item_conditions_copy = conditions[:]
     item_conditions_copy = [item for item in item_conditions_copy if not isinstance(item, Atom)]
@@ -85,6 +84,25 @@ def _find_all_conditions(conditions):
         item_conditions_copy.insert(replace_indexes[index], Condition(left_side, separator, right_side))
 
     return item_conditions_copy
+
+
+def _check_argument_lists(arguments):
+    fact_arguments = []
+    item_to_replace = None
+    replace_index = None
+
+    for index, argument in enumerate(arguments.arguments.items):
+        if isinstance(argument, PList):
+            item_to_replace = argument
+            replace_index = index
+            for item_list in argument.items:
+                fact_arguments.append(item_list)
+
+    if len(fact_arguments) == 3 and fact_arguments[1].atom == '|':
+        arguments.arguments.items.remove(item_to_replace)
+        arguments.arguments.items.insert(replace_index, PList([], fact_arguments[0], fact_arguments[2]))
+
+    return arguments
 
 
 class PrologFormatChecker:
@@ -113,8 +131,7 @@ class PrologFormatChecker:
         while len(self._prolog_string) > 0:
             self._parsed_json.append(self._parse_item())
 
-        self._check_condition_statements()
-        self._check_lists()
+        self._check_condition_statements_and_lists()
 
         return self._parsed_json
 
@@ -181,9 +198,10 @@ class PrologFormatChecker:
         self._pop_current_prolog_element()
         return PList(list_of_arguments)
 
-    def _check_condition_statements(self):
+    def _check_condition_statements_and_lists(self):
         for item in self._parsed_json:
             if isinstance(item, Fact):
+
                 for idx, c in enumerate(item.conditions):
                     if isinstance(c, PList):
 
@@ -195,25 +213,4 @@ class PrologFormatChecker:
                         item.conditions = item_conditions_copy
 
                 item.conditions = _find_all_conditions(item.conditions)
-
-    def _check_lists(self):
-        for item in self._parsed_json:
-            if isinstance(item, Fact):
-                fact_arguments = []
-                item_to_replace = None
-                replace_index = None
-
-                for index, argument in enumerate(item.arguments.arguments.items):
-                    if isinstance(argument, PList):
-                        item_to_replace = argument
-                        replace_index = index
-                        for item_list in argument.items:
-                            fact_arguments.append(item_list)
-
-                if len(fact_arguments) == 3 and fact_arguments[1].atom == '|':
-                    item.arguments.arguments.items.remove(item_to_replace)
-                    item.arguments.arguments.items.insert(
-                        replace_index,
-                        PList([], fact_arguments[0], fact_arguments[2])
-                    )
-
+                item.arguments = _check_argument_lists(item.arguments)
