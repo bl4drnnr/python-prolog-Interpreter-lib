@@ -12,6 +12,81 @@ def _parse_atom(atoms):
     return [token.group() for token in iterator]
 
 
+def _find_all_condition_statements(fact_condition):
+    left_separator_index = None
+    right_separator_index = None
+    clause_separator_index = None
+
+    for index, k in enumerate(fact_condition.items):
+        if \
+                isinstance(k, Atom) and \
+                isinstance(fact_condition.items[index + 1], Atom) and \
+                k.atom == '-' and \
+                fact_condition.items[index + 1].atom == '>':
+            left_separator_index = index
+            right_separator_index = index + 1
+        if isinstance(k, Atom) and k.atom == ';':
+            clause_separator_index = index
+
+    condition_statement = fact_condition.items[:left_separator_index]
+    else_clause = fact_condition.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
+    then_clause = fact_condition.items[right_separator_index:][clause_separator_index - len(condition_statement):]
+
+    for index, condition_atom in enumerate(condition_statement):
+        if condition_atom.atom in CONDITION_SEPARATORS:
+            right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
+            left_side = ''.join([item.atom for item in condition_statement[:index]])
+            condition = Condition(left_side, condition_atom.atom, right_side)
+            return [condition, else_clause, then_clause]
+
+
+def _find_all_conditions(conditions):
+    fact_atoms = []
+    not_atom_index = 0
+
+    for index, condition in enumerate(conditions):
+        current_index = index if index + 1 == len(conditions) else index + 1
+
+        if isinstance(condition, Atom) and isinstance(conditions[current_index], Atom):
+            fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
+        elif isinstance(condition, Atom) and not isinstance(conditions[current_index], Atom):
+            fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
+            fact_atoms.append(Atom(CONDITION_STRING_SEPARATOR))
+        if not isinstance(condition, Atom):
+            not_atom_index += 1
+
+    fact_atom_str = ""
+    replace_indexes = []
+    for atom in fact_atoms:
+        if isinstance(atom, Atom):
+            fact_atom_str += atom.atom
+        elif atom.get('condition'):
+            fact_atom_str += atom['condition'].atom
+
+    for atom in fact_atoms[::-1]:
+        if not isinstance(atom, Atom):
+            if atom['not_atom_index'] not in replace_indexes:
+                replace_indexes.append(atom['not_atom_index'])
+
+    item_conditions_copy = conditions[:]
+    item_conditions_copy = [item for item in item_conditions_copy if not isinstance(item, Atom)]
+
+    fact_atom_str = fact_atom_str.split(CONDITION_STRING_SEPARATOR)
+    fact_atom_str.reverse()
+
+    for index, condition in enumerate(fact_atom_str):
+        separator = None
+
+        for condition_symbol in condition:
+            if condition_symbol in CONDITION_SEPARATORS:
+                separator = condition_symbol
+
+        [left_side, right_side] = condition.split(separator)
+        item_conditions_copy.insert(replace_indexes[index], Condition(left_side, separator, right_side))
+
+    return item_conditions_copy
+
+
 class PrologFormatChecker:
     def __init__(self):
         self._prolog_string = []
@@ -41,7 +116,7 @@ class PrologFormatChecker:
         self._check_condition_statements()
         self._check_lists()
 
-        return [item for item in self._parsed_json if not isinstance(item, Atom)]
+        return self._parsed_json
 
     def _parse_item(self):
         item_predicate = self._parse_term()
@@ -111,80 +186,15 @@ class PrologFormatChecker:
             if isinstance(item, Fact):
                 for idx, c in enumerate(item.conditions):
                     if isinstance(c, PList):
-                        left_separator_index = None
-                        right_separator_index = None
-                        clause_separator_index = None
 
-                        for index, k in enumerate(c.items):
-                            if \
-                                    isinstance(k, Atom) and \
-                                    isinstance(c.items[index + 1], Atom) and \
-                                    k.atom == '-' and \
-                                    c.items[index + 1].atom == '>':
-                                left_separator_index = index
-                                right_separator_index = index + 1
-                            if isinstance(k, Atom) and k.atom == ';':
-                                clause_separator_index = index
-
-                        condition_statement = c.items[:left_separator_index]
-                        else_clause = c.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
-                        then_clause = c.items[right_separator_index:][clause_separator_index - len(condition_statement):]
-
-                        condition = None
-                        for index, condition_atom in enumerate(condition_statement):
-                            if condition_atom.atom in CONDITION_SEPARATORS:
-                                right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
-                                left_side = ''.join([item.atom for item in condition_statement[:index]])
-                                condition = Condition(left_side, condition_atom.atom, right_side)
-                                break
+                        [condition, else_clause, then_clause] = _find_all_condition_statements(c)
 
                         item_conditions_copy = item.conditions[:]
-
                         item_conditions_copy.insert(idx, ConditionStatement(condition, then_clause, else_clause))
                         item_conditions_copy.remove(c)
-
                         item.conditions = item_conditions_copy
 
-                fact_atoms = []
-                not_atom_index = 0
-
-                for index, condition in enumerate(item.conditions):
-                    current_index = index if index + 1 == len(item.conditions) else index + 1
-
-                    if isinstance(condition, Atom) and isinstance(item.conditions[current_index], Atom):
-                        fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
-                    elif isinstance(condition, Atom) and not isinstance(item.conditions[current_index], Atom):
-                        fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
-                        fact_atoms.append(Atom(CONDITION_STRING_SEPARATOR))
-                    if not isinstance(condition, Atom):
-                        not_atom_index += 1
-
-                fact_atom_str = ""
-                replace_indexes = []
-                if len(fact_atoms):
-                    for atom in fact_atoms:
-                        if isinstance(atom, Atom):
-                            fact_atom_str += atom.atom
-                        elif atom.get('condition'):
-                            fact_atom_str += atom['condition'].atom
-
-                    for atom in fact_atoms:
-                        if not isinstance(atom, Atom):
-                            if atom['not_atom_index'] not in replace_indexes:
-                                replace_indexes.append(atom['not_atom_index'])
-
-                if len(fact_atom_str):
-                    fact_atom_str = fact_atom_str.split(CONDITION_STRING_SEPARATOR)
-
-                    for index, condition in enumerate(fact_atom_str):
-                        separator = None
-
-                        for condition_symbol in condition:
-                            if condition_symbol in CONDITION_SEPARATORS:
-                                separator = condition_symbol
-
-                        [left_side, right_side] = condition.split(separator)
-                        item.conditions.insert(replace_indexes[index], Condition(left_side, separator, right_side))
+                item.conditions = _find_all_conditions(item.conditions)
 
     def _check_lists(self):
         for item in self._parsed_json:
