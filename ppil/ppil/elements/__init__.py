@@ -4,3 +4,4 @@ from ._fact import Fact
 from ._p_list import PList
 from ._atom import Atom
 from ._condition_statement import ConditionStatement
+from ._separator import Separator

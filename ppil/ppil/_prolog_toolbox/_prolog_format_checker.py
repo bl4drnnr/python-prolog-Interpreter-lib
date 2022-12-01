@@ -1,5 +1,5 @@
 import re
-from ppil.ppil.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
+from ppil.ppil.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement, Separator
 from ppil.ppil._variables import CONDITION_SEPARATORS, CONDITION_STRING_SEPARATOR
 
 ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+\'-\|]"
@@ -73,12 +73,14 @@ def _find_all_conditions(conditions):
     fact_atom_str = fact_atom_str.split(CONDITION_STRING_SEPARATOR)
     fact_atom_str.reverse()
 
+    fact_atom_str = [fas for fas in fact_atom_str if len(fas) > 0]
     for index, condition in enumerate(fact_atom_str):
         separator = None
 
-        for condition_symbol in condition:
-            if condition_symbol in CONDITION_SEPARATORS:
+        for condition_symbol in CONDITION_SEPARATORS:
+            if condition_symbol in condition:
                 separator = condition_symbol
+                break
 
         [left_side, right_side] = condition.split(separator)
         item_conditions_copy.insert(replace_indexes[index], Condition(left_side, separator, right_side))
@@ -152,6 +154,9 @@ class PrologFormatChecker:
             if self._get_current_prolog_element() == "," or self._get_current_prolog_element() == ";":
                 separator = self._pop_current_prolog_element()
                 self._joins.append(separator)
+
+                if isinstance(arguments[-1], Atom):
+                    arguments.append(Separator())
 
         self._pop_current_prolog_element()
 
