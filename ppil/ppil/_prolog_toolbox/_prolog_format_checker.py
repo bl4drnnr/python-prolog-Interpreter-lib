@@ -1,6 +1,6 @@
 import re
-from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
-from ppil.ppil.api_instance._variables import CONDITION_SEPARATORS, CONDITION_STRING_SEPARATOR
+from ppil.ppil.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
+from ppil.ppil._variables import CONDITION_SEPARATORS, CONDITION_STRING_SEPARATOR
 
 ATOM_REGEX = r"[A-Za-z0-9_]+|:\-|[\[\]()\.,><;\+\'-\|]"
 NUMBER_REGEX = "^[0-9]*$"

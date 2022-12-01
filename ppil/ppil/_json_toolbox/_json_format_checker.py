@@ -1,6 +1,6 @@
-from ppil.ppil.api_instance._api_response_handler import WrongFactFormat, WrongJsonFormat
-from ppil.ppil.api_instance._variables import JSON_FORMAT_KEYS
-from ppil.ppil.api_instance.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
+from ppil.ppil._api_response_handler import WrongFactFormat, WrongJsonFormat
+from ppil.ppil._variables import JSON_FORMAT_KEYS
+from ppil.ppil.elements import Predicate, Fact, PList, Atom, Condition, ConditionStatement
 
 
 def _check_item_type(item):
