@@ -80,7 +80,7 @@ class JsonParser:
     def _parse_json_predicates(self, predicates):
         for predicate in predicates:
             predicate_arguments = _parse_predicate_arguments(predicate.arguments)
-            self._output_program += f"{predicate.name}({str(predicate_arguments)[1:-1]}).\n"
+            self._output_program += f"{predicate.name}({str(predicate_arguments)}).\n"
 
     def _parse_json_facts(self, facts):
         for fact in facts:
