@@ -32,8 +32,8 @@ class Executor:
         self._current_directory = None
 
     def execute_code(self, code):
-        if not code.get('query'):
-            raise ExecutionError(response='No set query.')
+        # if not code.get('query') and not isinstance(code.get('query'), list):
+        #     raise ExecutionError(response='No set query or query is not list.')
 
         self._set_current_directory()
 
@@ -46,20 +46,12 @@ class Executor:
         os.chmod(prolog_source_path, 0o700)
         os.chmod(executor_path, 0o700)
 
-        # Here is what I am going to do
-        # If it's pure prolog, split it by dot
-        # Iterate it and find fact, wrap it
-
-        # For JSON first convert to prolog and do steps above
-
-        # Also allow user to send list of queries
-        # What to do with variables
-        if isinstance(source_code, str):
-            serialized_program = _wrap_facts(source_code)
-        else:
+        if not isinstance(source_code, str):
             json_data = self._json_format_checker.check_json_format(code)
-            serialized_program = self._json_parser.parse_json(json_data)
+            source_code = self._json_parser.parse_json(json_data)
+            source_code = source_code.replace('\n', '').strip()
 
+        serialized_program = _wrap_facts(source_code)
         serialized_program = '.\n'.join(serialized_program) + '.\n'
         source_script_file.write(serialized_program)
         source_script_file.close()
@@ -67,7 +59,7 @@ class Executor:
         code_query = code.get('query')
         execution_result = subprocess.run([
             'swipl', '-q', '-g', code_query, '-t', 'halt', prolog_source_path
-        ])
+        ], stdout=subprocess.PIPE)
 
         return execution_result.stdout.decode('utf-8')
 
