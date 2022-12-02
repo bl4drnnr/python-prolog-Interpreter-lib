@@ -17,7 +17,8 @@
       2. [Atom](#atom)
       3. [List](#list)
       4. [Condition](#condition)
-      5. [Fact](#fact)
+      5. [Condition statement](#condition-statement)
+      6. [Fact](#fact)
 5. [References and contact](#references-and-contact)
 6. [Licence](#license)
 
@@ -258,10 +259,20 @@ in order to create your own queries.
 #### Condition
 ```json
 {
-   "left_side": "STRING",
-   "right_side": "STRING",
+   "left_side": "<STRING>",
+   "right_side": "<STRING>",
    "separator": "=:=|=\\=|\\=|=<|>=|=|>|is|<",
    "type": "condition"
+}
+```
+
+#### Condition statement
+```json
+{
+   "if_condition": "<CONDITION>",
+   "then_clause": "<LIST>",
+   "else_clause": "<LIST>",
+   "type": "condition_statement"
 }
 ```
 
