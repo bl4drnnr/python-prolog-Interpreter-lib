@@ -35,7 +35,14 @@ def _check_item_type(item):
         if_condition = _check_item_type(item.if_condition)
         else_clause = [_check_item_type(i) for i in item.else_clause]
         then_clause = [_check_item_type(i) for i in item.then_clause]
-        return f"{if_condition}->{','.join(else_clause)};{','.join(then_clause)}"
+
+        else_clause = ','.join(else_clause)
+        then_clause = ','.join(then_clause)
+
+        else_clause = else_clause[:-1] if else_clause[-1] == ',' else else_clause
+        then_clause = then_clause[:-1] if then_clause[-1] == ',' else then_clause
+
+        return f"{if_condition}->{else_clause};{then_clause}"
 
 
 def _parse_predicate_arguments(arguments):
