@@ -67,10 +67,15 @@ class Executor:
             source_code = source_code.replace('\n', '').strip()
 
         code_query = code.get('query')
-        results = []
+
+        results = {}
+        for query in code_query:
+            query_name = query[:query.index('(')]
+            results[query_name] = []
 
         for query in code_query:
             query_arguments = query[query.index('(') + 1:-1].split(',')
+            query_name = query[:query.index('(')]
             if len(query_arguments) == 0:
                 pass
 
@@ -91,7 +96,7 @@ class Executor:
                 res = {}
                 for query_index, query_argument in enumerate(query_arguments):
                     res[query_argument.strip()] = result.split(' ')[query_index]
-                results.append(res)
+                results[query_name].append(res)
 
         return results
 
