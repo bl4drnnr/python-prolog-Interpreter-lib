@@ -55,13 +55,11 @@ class Executor:
         self._set_current_directory()
 
         prolog_source_path = f"{self._current_directory}/source_script.pl"
-        executor_path = f"{self._current_directory}/executor.sh"
 
         source_code = code['data']
         source_code = source_code.replace('\n', '') if isinstance(source_code, str) else source_code
 
         os.chmod(prolog_source_path, 0o700)
-        os.chmod(executor_path, 0o700)
 
         if not isinstance(source_code, str):
             json_data = self._json_format_checker.check_json_format(code)
