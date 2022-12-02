@@ -629,14 +629,9 @@ def test_execution_from_json():
     assert response.json() == EXPECTED_EXECUTION_JSON_RESPONSE
 
 
-def test_execution_prolog_and_json():
-    pass
-
-
 _run_instance()
 
 test_prolog_to_json()
 test_json_to_prolog()
 test_execution_from_prolog()
 test_execution_from_json()
-test_execution_prolog_and_json()
