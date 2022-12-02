@@ -5,10 +5,20 @@
    1. [Installation](#installation)
    2. [Example of API usage](#example-of-api-usage)
 3. [Introduction to Prolog](#introduction-to-prolog)
-   1. [Data types](#data-types)
+   1. [Prolog data types](#prolog-data-types)
    2. [Rules and facts](#rules-and-facts)
 4. [Documentation](#documentation)
-   1. [Usage of API](#usage-of-api)
+   1. [Endpoints](#endpoints)
+      1. [Prolog to JSON](#prolog-to-json)
+      2. [JSON to Prolog](#json-to-prolog)
+      3. [Execute](#execute)
+   2. [Data types](#data-types)
+      1. [Predicate](#predicate)
+      2. [Atom](#atom)
+      3. [List](#list)
+      4. [Condition](#condition)
+      5. [Condition statement](#condition-statement)
+      6. [Fact](#fact)
 5. [References and contact](#references-and-contact)
 6. [Licence](#license)
 
@@ -66,7 +76,7 @@ If the negated query can be refuted, i.e., an instantiation for all free variabl
 This makes Prolog (and other logic programming languages) particularly useful for database, symbolic mathematics, and language parsing applications. Because Prolog allows impure predicates, checking the truth value of certain special predicates may have some deliberate side effect, such as printing a value to the screen. 
 Because of this, the programmer is permitted to use some amount of conventional imperative programming when the logical paradigm is inconvenient. It has a purely logical subset, called "pure Prolog", as well as a number of extralogical features.
 
-### Data types
+### Prolog data types
 
 Prolog's single data type is the term. Terms are either atoms, numbers, variables or compound terms.
 
@@ -147,16 +157,19 @@ These predicates are not given a relational meaning and are only useful for the 
 
 ## Documentation
 
-### Usage of API
+### Endpoints
 
-Also, you can create API instance that allows you to send requests and receive responses with formatted data.
+You can create API instance that allows you to send requests and receive responses with formatted data.
 Generally speaking, you can convert `JSON` to `Prolog` and `Prolog` to `JSON`.
 
-There are 2 endpoints for that:
+In general, there are 3 available endpoints:
 ```
 POST /json-to-prolog
 POST /prolog-to-json
+POST /execute
 ```
+
+#### Prolog to JSON
 
 The first and the main requirement is that you need to send data in `JSON` format with your data in `data`.
 
@@ -167,6 +180,8 @@ For example, if you want to use `/prolog-to-json` endpoint, your `JSON` body wil
    "data": "predicate_name(arg1, arg2, arg3)."
 }
 ```
+
+#### JSON to Prolog
 
 A bit different situation looks like when you are trying to send data to `/json-to-prolog` endpoint.
 Everything also starts with data in `data`, but as value it gets array of properly parsed objects,
@@ -200,9 +215,22 @@ that describes `Prolog` data. Here is the example of data in previous example co
 }
 ```
 
-The 2 _main_ types that are allowed to use are `predicate` and `fact`.
+You can play around with this by sending `Prolog` program to `/prolog-to-json` endpoint and then
+`JSON` that you've got send back `/json-to-prolog`. You should get the same result.
 
-Format of `predicate`:
+#### Execute
+
+The last but not the least endpoint is `/execute`. This endpoint has 2 required values: `data`
+(_in this case it can be `Prolog` either `JSON`_) and `query` - list of query to execute.
+
+### Data types
+
+Below you can find `JSON` description of every single data type. Use them in presented format
+in order to create your own queries.
+
+**_(Otherwise, you can always just use `/prolog-to-json` endpoint)_**
+
+#### Predicate
 ```json
 {
    "arguments": "<LIST_OF_ARGUMENTS>",
@@ -211,9 +239,7 @@ Format of `predicate`:
 }
 ```
 
-As you can see, every value within predicate (`atom`) also has its own format.
-In this case type `atom` looks like this:
-
+#### Atom
 ```json
 {
    "data_type": "STRING|VARIABLE|NUMBER|ATOM",
@@ -222,81 +248,35 @@ In this case type `atom` looks like this:
 }
 ```
 
-It's better to see on example how structure of facts looks like. Let's say we have next rule:
-`predicate(arg1, arg2, arg3):-test(2,4,5),test2(['lists']).`. After using `/prolog-to-json`
-endpoint, we will get next result:
-
+#### List
 ```json
 {
-    "data": [
-        {
-            "arguments": [
-                {
-                    "data_type": "atom",
-                    "type": "atom",
-                    "value": "arg1"
-                },
-                {
-                    "data_type": "atom",
-                    "type": "atom",
-                    "value": "arg2"
-                },
-                {
-                    "data_type": "atom",
-                    "type": "atom",
-                    "value": "arg3"
-                }
-            ],
-            "conditions": [
-                {
-                    "arguments": [
-                        {
-                            "data_type": "number",
-                            "type": "atom",
-                            "value": 2.0
-                        },
-                        {
-                            "data_type": "number",
-                            "type": "atom",
-                            "value": 4.0
-                        },
-                        {
-                            "data_type": "number",
-                            "type": "atom",
-                            "value": 5.0
-                        }
-                    ],
-                    "name": "test",
-                    "type": "predicate"
-                },
-                {
-                    "arguments": [
-                        {
-                            "items": [
-                                {
-                                    "data_type": "string",
-                                    "type": "atom",
-                                    "value": "lists"
-                                }
-                            ],
-                            "type": "list"
-                        }
-                    ],
-                    "name": "test2",
-                    "type": "predicate"
-                }
-            ],
-            "joins": [
-                ","
-            ],
-            "name": "predicate",
-            "type": "fact"
-        }
-    ]
+   "items": "<LIST_OF_ATOMS_OR_NESTED_LISTS>",
+   "type": "list"
 }
 ```
 
-So, format of facts looks like this:
+#### Condition
+```json
+{
+   "left_side": "STRING",
+   "right_side": "STRING",
+   "separator": "=:=|=\=|\=|=<|>=|=|>|is|<",
+   "type": "condition"
+}
+```
+
+#### Condition statement
+```json
+{
+   "if_condition": "",
+   "then_clause": "",
+   "else_clause": "",
+   "type": "condition_statement"
+}
+```
+
+#### Fact
 ```json
 {
    "arguments": "<LIST_OF_FACTS_ARGUMENTS>",
@@ -308,10 +288,6 @@ So, format of facts looks like this:
 ```
 
 Values in `joins` join conditions in the order they are placed.
-
-As you noticed above, the other type you can meet within arguments is `list`.  
-
-And as you probably already have guessed, lists can be nested.
 
 ---
 
