@@ -12,11 +12,10 @@ def _parse_atom(atoms):
     return [token.group() for token in iterator]
 
 
-def _find_all_condition_statements(fact_condition):
+def _get_separator_indexes(fact_condition):
     left_separator_index = None
     right_separator_index = None
     clause_separator_index = None
-    # test():-5+3 > 12, bruh(X), (5+1 -> test(C); [123, [123]]); M is A + 14.
 
     for index, k in enumerate(fact_condition.items):
         if \
@@ -28,6 +27,47 @@ def _find_all_condition_statements(fact_condition):
             right_separator_index = index + 1
         if isinstance(k, Atom) and k.atom == ';':
             clause_separator_index = index
+
+    return [left_separator_index, right_separator_index, clause_separator_index]
+
+
+def _separate_atoms_by_position(conditions):
+    fact_atoms = []
+    not_atom_index = 0
+
+    for index, condition in enumerate(conditions):
+        current_index = index if index + 1 == len(conditions) else index + 1
+
+        if isinstance(condition, Atom) and isinstance(conditions[current_index], Atom):
+            fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
+        elif isinstance(condition, Atom) and not isinstance(conditions[current_index], Atom):
+            fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
+            fact_atoms.append(Atom(CONDITION_STRING_SEPARATOR))
+        if not isinstance(condition, Atom):
+            not_atom_index += 1
+
+    return fact_atoms
+
+
+def _get_condition_string(fact_atoms):
+    fact_atom_str = ""
+    replace_indexes = []
+
+    for atom in fact_atoms:
+        if isinstance(atom, Atom):
+            fact_atom_str += atom.atom
+        elif atom.get('condition'):
+            fact_atom_str += atom['condition'].atom
+
+    for atom in fact_atoms[::-1]:
+        if not isinstance(atom, Atom) and atom['not_atom_index'] not in replace_indexes:
+            replace_indexes.append(atom['not_atom_index'])
+
+    return [fact_atom_str, replace_indexes]
+
+
+def _find_all_condition_statements(fact_condition):
+    [left_separator_index, right_separator_index, clause_separator_index] = _get_separator_indexes(fact_condition)
 
     condition_statement = fact_condition.items[:left_separator_index]
     else_clause = fact_condition.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
@@ -41,31 +81,8 @@ def _find_all_condition_statements(fact_condition):
 
 
 def _find_all_conditions(conditions):
-    fact_atoms = []
-    not_atom_index = 0
-    fact_atom_str = ""
-    replace_indexes = []
-
-    for index, condition in enumerate(conditions):
-        current_index = index if index + 1 == len(conditions) else index + 1
-
-        if isinstance(condition, Atom) and isinstance(conditions[current_index], Atom):
-            fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
-        elif isinstance(condition, Atom) and not isinstance(conditions[current_index], Atom):
-            fact_atoms.append({'condition': condition, 'not_atom_index': not_atom_index})
-            fact_atoms.append(Atom(CONDITION_STRING_SEPARATOR))
-        if not isinstance(condition, Atom):
-            not_atom_index += 1
-
-    for atom in fact_atoms:
-        if isinstance(atom, Atom):
-            fact_atom_str += atom.atom
-        elif atom.get('condition'):
-            fact_atom_str += atom['condition'].atom
-
-    for atom in fact_atoms[::-1]:
-        if not isinstance(atom, Atom) and atom['not_atom_index'] not in replace_indexes:
-            replace_indexes.append(atom['not_atom_index'])
+    fact_atoms = _separate_atoms_by_position(conditions)
+    [fact_atom_str, replace_indexes] = _get_condition_string(fact_atoms)
 
     item_conditions_copy = conditions[:]
     item_conditions_copy = [item for item in item_conditions_copy if not isinstance(item, Atom)]
