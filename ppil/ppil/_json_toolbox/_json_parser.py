@@ -20,9 +20,9 @@ def _check_item_type(item):
             close_bracket = parsed_list.count(']')
 
             if open_bracket == close_bracket:
-                return parsed_list
+                return parsed_list + ','
             else:
-                return parsed_list + "]" * (open_bracket - close_bracket)
+                return parsed_list + "]" * (open_bracket - close_bracket) + ','
 
     elif isinstance(item, Predicate):
         serialized_text = _parse_predicate_arguments(item.arguments)
