@@ -16,6 +16,7 @@ def _find_all_condition_statements(fact_condition):
     left_separator_index = None
     right_separator_index = None
     clause_separator_index = None
+    # test():-5+3 > 12, bruh(X), (5+1 -> test(C); [123, [123]]); M is A + 14.
 
     for index, k in enumerate(fact_condition.items):
         if \
