@@ -12,25 +12,29 @@ def _get_fact_head_and_conditions(fact):
     return [head_part.replace('\n', '').strip(), condition_part.replace('\n', '').strip()]
 
 
-def _wrap_facts(prolog_program):
+def _wrap_facts(prolog_program, query):
     prolog_program = prolog_program.split('.')
     updated_prolog_program = []
+    query_head = query.split('(')[0]
 
     for item in prolog_program:
         if ':-' in item:
             [head_part, condition_part] = _get_fact_head_and_conditions(item)
-            fact_arguments = head_part[head_part.index('(')+1:-1]
-            result_output_pattern = ' '.join([
-                f"~q" for index, item in enumerate(fact_arguments.split(','))
-            ])
-            result_output_pattern += EXECUTION_RESULT_SPLITER
+            fact_name = head_part.split('(')[0]
 
-            updated_prolog_program.append(
-                item.replace(
-                    condition_part,
-                    f'forall(({condition_part}), format("{result_output_pattern}", [{fact_arguments}])), halt'
+            if query_head == fact_name:
+                fact_arguments = head_part[head_part.index('(')+1:-1]
+                result_output_pattern = ' '.join([f"~q" for index, item in enumerate(fact_arguments.split(','))])
+                result_output_pattern += EXECUTION_RESULT_SPLITER
+
+                updated_prolog_program.append(
+                    item.replace(
+                        condition_part,
+                        f'forall(({condition_part}), format("{result_output_pattern}", [{fact_arguments}]))'
+                    )
                 )
-            )
+            else:
+                updated_prolog_program.append(item)
 
         else:
             updated_prolog_program.append(item)
@@ -56,9 +60,6 @@ class Executor:
         source_code = code['data']
         source_code = source_code.replace('\n', '') if isinstance(source_code, str) else source_code
 
-        code_query = code.get('query')
-        source_script_file = open(prolog_source_path, 'w+')
-
         os.chmod(prolog_source_path, 0o700)
         os.chmod(executor_path, 0o700)
 
@@ -67,14 +68,18 @@ class Executor:
             source_code = self._json_parser.parse_json(json_data)
             source_code = source_code.replace('\n', '').strip()
 
-        serialized_program = _wrap_facts(source_code)
-        serialized_program = '.\n'.join(serialized_program) + '.'
-
-        source_script_file.write(serialized_program)
-        source_script_file.close()
-
+        code_query = code.get('query')
         results = []
+
         for query in code_query:
+            source_script_file = open(prolog_source_path, 'w+')
+
+            serialized_program = _wrap_facts(source_code, query)
+            serialized_program = '.\n'.join(serialized_program) + '.'
+
+            source_script_file.write(serialized_program)
+            source_script_file.close()
+
             execution_result = subprocess.run([
                 'swipl', '-q', '-g', query, '-t', 'halt', prolog_source_path
             ], stdout=subprocess.PIPE)
