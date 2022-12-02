@@ -261,7 +261,7 @@ in order to create your own queries.
 {
    "left_side": "STRING",
    "right_side": "STRING",
-   "separator": "=:=|=\=|\=|=<|>=|=|>|is|<",
+   "separator": "=:=|=\\=|\\=|=<|>=|=|>|is|<",
    "type": "condition"
 }
 ```
