@@ -27,12 +27,12 @@ def _wrap_facts(prolog_program, query):
                 result_output_pattern = ' '.join([f"~q" for index, item in enumerate(fact_arguments.split(','))])
                 result_output_pattern += EXECUTION_RESULT_SPLITER
 
-                updated_prolog_program.append(
-                    item.replace(
-                        condition_part,
-                        f'forall(({condition_part}), format("{result_output_pattern}", [{fact_arguments}]))'
-                    )
-                )
+                if fact_name not in condition_part:
+                    replace_condition_part = f'forall(({condition_part}), format("{result_output_pattern}", [{fact_arguments}]))'
+                else:
+                    replace_condition_part = f'({condition_part}), format("{result_output_pattern}", [{fact_arguments}])'
+
+                updated_prolog_program.append(item.replace(condition_part, replace_condition_part))
             else:
                 updated_prolog_program.append(item)
 
@@ -72,6 +72,10 @@ class Executor:
         results = []
 
         for query in code_query:
+            query_arguments = query[query.index('(') + 1:-1].split(',')
+            if len(query_arguments) == 0:
+                pass
+
             source_script_file = open(prolog_source_path, 'w+')
 
             serialized_program = _wrap_facts(source_code, query)
@@ -83,8 +87,13 @@ class Executor:
             execution_result = subprocess.run([
                 'swipl', '-q', '-g', query, '-t', 'halt', prolog_source_path
             ], stdout=subprocess.PIPE)
-            serialized_result = execution_result.stdout.decode('utf-8').split(EXECUTION_RESULT_SPLITER)
-            results.append(serialized_result[:-1])
+            serialized_result = execution_result.stdout.decode('utf-8').split(EXECUTION_RESULT_SPLITER)[:-1]
+
+            for result in serialized_result:
+                res = {}
+                for query_index, query_argument in enumerate(query_arguments):
+                    res[query_argument.strip()] = result.split(' ')[query_index]
+                results.append(res)
 
         return results
 
