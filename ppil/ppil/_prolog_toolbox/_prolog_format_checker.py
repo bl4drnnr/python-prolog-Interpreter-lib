@@ -33,11 +33,10 @@ def _find_all_condition_statements(fact_condition):
     then_clause = fact_condition.items[right_separator_index:][clause_separator_index - len(condition_statement):]
 
     for index, condition_atom in enumerate(condition_statement):
-        if condition_atom.atom in CONDITION_SEPARATORS:
-            right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
-            left_side = ''.join([item.atom for item in condition_statement[:index]])
-            condition = Condition(left_side, condition_atom.atom, right_side)
-            return [condition, else_clause, then_clause]
+        right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
+        left_side = ''.join([item.atom for item in condition_statement[:index]])
+        condition = Condition(left_side, condition_atom.atom, right_side)
+        return [condition, else_clause, then_clause]
 
 
 def _find_all_conditions(conditions):
