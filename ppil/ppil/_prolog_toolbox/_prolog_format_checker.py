@@ -69,15 +69,16 @@ def _get_condition_string(fact_atoms):
 def _find_all_condition_statements(fact_condition):
     [left_separator_index, right_separator_index, clause_separator_index] = _get_separator_indexes(fact_condition)
 
-    condition_statement = fact_condition.items[:left_separator_index]
-    else_clause = fact_condition.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
-    then_clause = fact_condition.items[right_separator_index:][clause_separator_index - len(condition_statement):]
+    if left_separator_index is not None and right_separator_index is not None and clause_separator_index is not None:
+        condition_statement = fact_condition.items[:left_separator_index]
+        else_clause = fact_condition.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
+        then_clause = fact_condition.items[right_separator_index:][clause_separator_index - len(condition_statement):]
 
-    for index, condition_atom in enumerate(condition_statement):
-        right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
-        left_side = ''.join([item.atom for item in condition_statement[:index]])
-        condition = Condition(left_side, condition_atom.atom, right_side)
-        return [condition, else_clause, then_clause]
+        for index, condition_atom in enumerate(condition_statement):
+            right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
+            left_side = ''.join([item.atom for item in condition_statement[:index]])
+            condition = Condition(left_side, condition_atom.atom, right_side)
+            return [condition, else_clause, then_clause]
 
 
 def _find_all_conditions(conditions):
@@ -226,13 +227,15 @@ class PrologFormatChecker:
 
                 for idx, c in enumerate(item.conditions):
                     if isinstance(c, PList):
+                        condition_clauses = _find_all_condition_statements(c)
 
-                        [condition, else_clause, then_clause] = _find_all_condition_statements(c)
+                        if condition_clauses is not None:
+                            [condition, else_clause, then_clause] = condition_clauses
 
-                        item_conditions_copy = item.conditions[:]
-                        item_conditions_copy.insert(idx, ConditionStatement(condition, then_clause, else_clause))
-                        item_conditions_copy.remove(c)
-                        item.conditions = item_conditions_copy
+                            item_conditions_copy = item.conditions[:]
+                            item_conditions_copy.insert(idx, ConditionStatement(condition, then_clause, else_clause))
+                            item_conditions_copy.remove(c)
+                            item.conditions = item_conditions_copy
 
                 if len(item.conditions) > 1:
                     item.conditions = _find_all_conditions(item.conditions)

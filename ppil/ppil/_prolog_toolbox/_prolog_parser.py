@@ -24,7 +24,7 @@ def _check_item_type(item):
         return {
             "type": item.type,
             "name": item.name,
-            "arguments": _parse_condition(item)
+            "arguments": _parse_condition_items(item)
         }
     elif isinstance(item, Condition):
         return {
@@ -40,8 +40,38 @@ def _parse_predicate_arguments(arguments):
     return [_check_item_type(arg) for arg in iter_items]
 
 
-def _parse_condition(condition):
+def _parse_condition_items(condition):
     return [_check_item_type(predicate_item) for predicate_item in condition.arguments.items]
+
+
+def _parse_predicate(predicate):
+    return {
+        "type": predicate.type,
+        "name": predicate.name,
+        "arguments": _parse_condition_items(predicate)
+    }
+
+
+def _parse_condition(condition):
+    return {
+        "type": condition.type,
+        "right_side": condition.right_side,
+        "left_side": condition.left_side,
+        "separator": condition.separator
+    }
+
+
+def _parse_p_list(p_list):
+    pass
+
+
+def _parse_condition_statement(condition_statement):
+    return {
+        "type": "condition_statement",
+        "if_condition": _check_item_type(condition_statement.if_condition),
+        "then_clause": [_check_item_type(item) for item in condition_statement.then_clause],
+        "else_clause": [_check_item_type(item) for item in condition_statement.else_clause]
+    }
 
 
 class PrologParser:
@@ -63,25 +93,13 @@ class PrologParser:
 
                 for condition in item.conditions:
                     if isinstance(condition, Predicate):
-                        conditions.append({
-                            "type": condition.type,
-                            "name": condition.name,
-                            "arguments": _parse_condition(condition)
-                        })
+                        conditions.append(_parse_predicate(condition))
                     elif isinstance(condition, Condition):
-                        conditions.append({
-                            "type": condition.type,
-                            "right_side": condition.right_side,
-                            "left_side": condition.left_side,
-                            "separator": condition.separator
-                        })
+                        conditions.append(_parse_condition(condition))
                     elif isinstance(condition, ConditionStatement):
-                        conditions.append({
-                            "type": "condition_statement",
-                            "if_condition": _check_item_type(condition.if_condition),
-                            "then_clause": [_check_item_type(item) for item in condition.then_clause],
-                            "else_clause": [_check_item_type(item) for item in condition.else_clause]
-                        })
+                        conditions.append(_parse_condition_statement(condition))
+                    elif isinstance(condition, PList):
+                        pass
 
                 self._output_json.append({
                     "type": item.type,
