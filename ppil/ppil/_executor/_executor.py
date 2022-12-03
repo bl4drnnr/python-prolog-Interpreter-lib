@@ -96,6 +96,7 @@ class Executor:
                 res = {}
                 for query_index, query_argument in enumerate(query_arguments):
                     res[query_argument.strip()] = result.split(' ')[query_index]
+                res = list(res.values())[0] if list(res.keys())[0] == '' else res
                 results[query_name].append(res)
 
         return results
