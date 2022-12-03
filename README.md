@@ -242,7 +242,7 @@ in order to create your own queries.
 #### Atom
 ```json
 {
-   "data_type": "STRING|VARIABLE|NUMBER|ATOM",
+   "data_type": "<STRING|VARIABLE|NUMBER|ATOM>",
    "type": "atom",
    "value": "<VALUE_OF_ATOM>"
 }
