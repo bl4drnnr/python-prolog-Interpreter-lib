@@ -215,7 +215,7 @@ class PrologFormatChecker:
         while self._get_current_prolog_element() != separator:
             list_of_arguments.append(self._parse_term())
 
-            if self._get_current_prolog_element() == ',':
+            if self._get_current_prolog_element() == "," or self._get_current_prolog_element() == ";":
                 self._pop_current_prolog_element()
 
         self._pop_current_prolog_element()

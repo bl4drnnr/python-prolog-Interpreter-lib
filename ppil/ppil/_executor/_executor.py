@@ -24,7 +24,7 @@ def _wrap_facts(prolog_program, query):
 
             if query_head == fact_name:
                 fact_arguments = head_part[head_part.index('(')+1:-1]
-                result_output_pattern = ' '.join([f"~q" for index, item in enumerate(fact_arguments.split(','))])
+                result_output_pattern = ' '.join([f"~q" for index, item in enumerate(fact_arguments.split(','))]) if len(fact_arguments) > 0 else ''
                 result_output_pattern += EXECUTION_RESULT_SPLITER
 
                 if fact_name not in condition_part:
