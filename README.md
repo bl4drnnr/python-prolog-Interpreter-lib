@@ -259,8 +259,8 @@ in order to create your own queries.
 #### Condition
 ```json
 {
-   "left_side": "STRING",
-   "right_side": "STRING",
+   "left_side": "<STRING>",
+   "right_side": "<STRING>",
    "separator": "=:=|=\\=|\\=|=<|>=|=|>|is|<",
    "type": "condition"
 }
@@ -269,9 +269,9 @@ in order to create your own queries.
 #### Condition statement
 ```json
 {
-   "if_condition": "",
-   "then_clause": "",
-   "else_clause": "",
+   "if_condition": "<CONDITION>",
+   "then_clause": "<LIST>",
+   "else_clause": "<LIST>",
    "type": "condition_statement"
 }
 ```

@@ -4,7 +4,9 @@ from ppil.ppil.elements import Predicate, Fact, PList, Atom, Condition, Conditio
 
 
 def _check_item_type(item):
-    if item.get('type') == 'atom':
+    if isinstance(item, list):
+        return [_check_item_type(d) for d in item]
+    elif item.get('type') == 'atom':
         return Atom(item.get('value'), item.get('data_type'))
     elif item.get('type') == 'list':
         if item.get('head') and item.get('tail'):

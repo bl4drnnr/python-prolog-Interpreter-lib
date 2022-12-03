@@ -12,7 +12,7 @@ def _parse_atom(atoms):
     return [token.group() for token in iterator]
 
 
-def _find_all_condition_statements(fact_condition):
+def _get_separator_indexes(fact_condition):
     left_separator_index = None
     right_separator_index = None
     clause_separator_index = None
@@ -28,23 +28,12 @@ def _find_all_condition_statements(fact_condition):
         if isinstance(k, Atom) and k.atom == ';':
             clause_separator_index = index
 
-    condition_statement = fact_condition.items[:left_separator_index]
-    else_clause = fact_condition.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
-    then_clause = fact_condition.items[right_separator_index:][clause_separator_index - len(condition_statement):]
-
-    for index, condition_atom in enumerate(condition_statement):
-        if condition_atom.atom in CONDITION_SEPARATORS:
-            right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
-            left_side = ''.join([item.atom for item in condition_statement[:index]])
-            condition = Condition(left_side, condition_atom.atom, right_side)
-            return [condition, else_clause, then_clause]
+    return [left_separator_index, right_separator_index, clause_separator_index]
 
 
-def _find_all_conditions(conditions):
+def _separate_atoms_by_position(conditions):
     fact_atoms = []
     not_atom_index = 0
-    fact_atom_str = ""
-    replace_indexes = []
 
     for index, condition in enumerate(conditions):
         current_index = index if index + 1 == len(conditions) else index + 1
@@ -57,6 +46,13 @@ def _find_all_conditions(conditions):
         if not isinstance(condition, Atom):
             not_atom_index += 1
 
+    return fact_atoms
+
+
+def _get_condition_string(fact_atoms):
+    fact_atom_str = ""
+    replace_indexes = []
+
     for atom in fact_atoms:
         if isinstance(atom, Atom):
             fact_atom_str += atom.atom
@@ -66,6 +62,28 @@ def _find_all_conditions(conditions):
     for atom in fact_atoms[::-1]:
         if not isinstance(atom, Atom) and atom['not_atom_index'] not in replace_indexes:
             replace_indexes.append(atom['not_atom_index'])
+
+    return [fact_atom_str, replace_indexes]
+
+
+def _find_all_condition_statements(fact_condition):
+    [left_separator_index, right_separator_index, clause_separator_index] = _get_separator_indexes(fact_condition)
+
+    if left_separator_index is not None and right_separator_index is not None and clause_separator_index is not None:
+        condition_statement = fact_condition.items[:left_separator_index]
+        else_clause = fact_condition.items[right_separator_index:][1:clause_separator_index - len(condition_statement) - 1]
+        then_clause = fact_condition.items[right_separator_index:][clause_separator_index - len(condition_statement):]
+
+        for index, condition_atom in enumerate(condition_statement):
+            right_side = ''.join([item.atom for item in condition_statement[index + 1:]])
+            left_side = ''.join([item.atom for item in condition_statement[:index]])
+            condition = Condition(left_side, condition_atom.atom, right_side)
+            return [condition, else_clause, then_clause]
+
+
+def _find_all_conditions(conditions):
+    fact_atoms = _separate_atoms_by_position(conditions)
+    [fact_atom_str, replace_indexes] = _get_condition_string(fact_atoms)
 
     item_conditions_copy = conditions[:]
     item_conditions_copy = [item for item in item_conditions_copy if not isinstance(item, Atom)]
@@ -197,7 +215,7 @@ class PrologFormatChecker:
         while self._get_current_prolog_element() != separator:
             list_of_arguments.append(self._parse_term())
 
-            if self._get_current_prolog_element() == ',':
+            if self._get_current_prolog_element() == "," or self._get_current_prolog_element() == ";":
                 self._pop_current_prolog_element()
 
         self._pop_current_prolog_element()
@@ -209,13 +227,15 @@ class PrologFormatChecker:
 
                 for idx, c in enumerate(item.conditions):
                     if isinstance(c, PList):
+                        condition_clauses = _find_all_condition_statements(c)
 
-                        [condition, else_clause, then_clause] = _find_all_condition_statements(c)
+                        if condition_clauses is not None:
+                            [condition, else_clause, then_clause] = condition_clauses
 
-                        item_conditions_copy = item.conditions[:]
-                        item_conditions_copy.insert(idx, ConditionStatement(condition, then_clause, else_clause))
-                        item_conditions_copy.remove(c)
-                        item.conditions = item_conditions_copy
+                            item_conditions_copy = item.conditions[:]
+                            item_conditions_copy.insert(idx, ConditionStatement(condition, then_clause, else_clause))
+                            item_conditions_copy.remove(c)
+                            item.conditions = item_conditions_copy
 
                 if len(item.conditions) > 1:
                     item.conditions = _find_all_conditions(item.conditions)
