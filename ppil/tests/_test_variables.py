@@ -87,7 +87,7 @@ EXECUTION_PROLOG_DATA = {
     "data": "person(michal, aleh, larysa, m, 19).person(aleh, wlodzimierz, ania, m, 56).person(larysa, andrzej, ola, f, 45).person(maciej, andrzej, ola, m, 48).person(andrzej, person1, person2, m, 82).person(ola, person3, person4, f, 75).person(wlodzimierz, person5, person6, m, 81).person(ania, person7, person8, f, 77).mother(X, Y):-person(X, _, _, _, E), person(Y, _, W, _, L), W = X, M1 is L + 14, E >= M1.father(X, Y):-person(X, _, _, _, E), person(Y, W, _, _, L), W = X, M1 is L + 14, E >= M1.brother(X, Y):-person(X,B,C,D,_), person(Y,P,M,_,_), B=P, C=M, D = m, X\=Y.sister(X, Y):-person(X,Q,W,E,_), person(Y,A,B,_,_), Q=A, W=B, E = f, X\=Y.grandmother(X, Y):-(((mother(A, Y), mother(X, B)); (mother(X, A), father(B, Y))), A = B).grandad(X, Y):-(((father(A, Y), father(X, B)); (father(X, A), mother(B, Y))), A = B).",
     "query": ["grandad(X, Y)", "grandmother(X, Y)"]
 }
-EXPECTED_EXECUTION_PROLOG_RESPONSE = {'data': {'grandad': [{'X': 'wlodzimierz', 'Y': 'michal'}, {'X': 'andrzej', 'Y': 'michal'}], 'grandmother': [{'X': 'ola', 'Y': 'michal'}, {'X': 'ania', 'Y': 'michal'}]}, 'statusCode': 200}
+EXPECTED_EXECUTION_PROLOG_RESPONSE = {"data": {"grandad": [{"X": "wlodzimierz", "Y": "michal"}, {"X": "andrzej", "Y": "michal"}], "grandmother": [{"X": "ola", "Y": "michal"}, {"X": "ania", "Y": "michal"}]}, "statusCode": 200}
 
 EXECUTION_JSON_DATA = {
     "data": [
@@ -813,3 +813,118 @@ EXPECTED_EXECUTION_JSON_RESPONSE = {
     },
     "statusCode": 200
 }
+
+EXECUTION_BAD_DOG = {
+    "data": "bad_dog(Dog):-bites(Dog, Person),is_person(Person),is_dog(Dog).bites(fido, postman).is_person(postman).is_dog(fido).",
+    "query": ["bad_dog(X)"]
+}
+EXPECTED_EXECUTION_BAD_DOG_JSON = {'data': {'bad_dog': [{'X': 'fido'}]}, 'statusCode': 200}
+
+EXECUTION_RECURSION = {
+    "data": "offspring(abraham, ishmael).offspring(abraham, isaac).offspring(isaac, esau).offspring(isaac, jacob).descendant(X, Y):- offspring(X, Y).descendant(X, Z):- offspring(X, Y), descendant(Y, Z).",
+    "query": ["descendant(abraham, X)"]
+}
+EXPECTED_EXECUTION_RECURSION_JSON = {'data': {'descendant': [{'X': 'ishmael', 'abraham': 'abraham'}, {'X': 'isaac', 'abraham': 'abraham'}]}, 'statusCode': 200}
+
+EXECUTION_SIBLINGS = {
+    "data": "father_child(massimo, ridge).father_child(eric, thorne).father_child(thorne, alexandria).mother_child(stephanie, chloe).mother_child(stephanie, kristen).mother_child(stephanie, felicia).parent_child(X, Y) :- father_child(X, Y).parent_child(X, Y) :- mother_child(X, Y).sibling(X, Y) :- parent_child(Z, X), parent_child(Z, Y).",
+    "query": ["sibling(X, felicia)"]
+}
+EXPECTED_EXECUTION_SIBLINGS_JSON = {}
+
+EXECUTION_EINSTEIN_PUZZLE = {
+    "data": """
+        exists(A, list(A, _, _, _, _)).
+        exists(A, list(_, A, _, _, _)).
+        exists(A, list(_, _, A, _, _)).
+        exists(A, list(_, _, _, A, _)).
+        exists(A, list(_, _, _, _, A)).
+        
+        rightOf(R, L, list(L, R, _, _, _)).
+        rightOf(R, L, list(_, L, R, _, _)).
+        rightOf(R, L, list(_, _, L, R, _)).
+        rightOf(R, L, list(_, _, _, L, R)).
+        
+        middle(A, list(_, _, A, _, _)).
+        
+        first(A, list(A, _, _, _, _)).
+        
+        nextTo(A, B, list(B, A, _, _, _)).
+        nextTo(A, B, list(_, B, A, _, _)).
+        nextTo(A, B, list(_, _, B, A, _)).
+        nextTo(A, B, list(_, _, _, B, A)).
+        nextTo(A, B, list(A, B, _, _, _)).
+        nextTo(A, B, list(_, A, B, _, _)).
+        nextTo(A, B, list(_, _, A, B, _)).
+        nextTo(A, B, list(_, _, _, A, B)).
+        puzzle(Houses) :-
+              exists(house(red, english, _, _, _), Houses),
+              exists(house(_, spaniard, _, _, dog), Houses),
+              exists(house(green, _, coffee, _, _), Houses),
+              exists(house(_, ukrainian, tea, _, _), Houses),
+              rightOf(house(green, _, _, _, _), 
+              house(ivory, _, _, _, _), Houses),
+              exists(house(_, _, _, oldgold, snails), Houses),
+              exists(house(yellow, _, _, kools, _), Houses),
+              middle(house(_, _, milk, _, _), Houses),
+              first(house(_, norwegian, _, _, _), Houses),
+              nextTo(house(_, _, _, chesterfield, _), house(_, _, _, _, fox), Houses),
+              nextTo(house(_, _, _, kools, _),house(_, _, _, _, horse), Houses),
+              exists(house(_, _, orangejuice, luckystike, _), Houses),
+              exists(house(_, japanese, _, parliament, _), Houses),
+              nextTo(house(_, norwegian, _, _, _), house(blue, _, _, _, _), Houses),
+              exists(house(_, _, water, _, _), Houses),
+              exists(house(_, _, _, _, zebra), Houses).
+        solution(WaterDrinker, ZebraOwner) :-
+              puzzle(Houses),
+              exists(house(_, WaterDrinker, water, _, _), Houses),
+              exists(house(_, ZebraOwner, _, _, zebra), Houses).
+    """,
+    "query": ["solution(WaterDrinker, ZebraOwner)"]
+}
+EXPECTED_EINSTEIN_PUZZLE_JSON = {'data': {'solution': [{'WaterDrinker': 'norwegian', 'ZebraOwner': 'japanese'}]}, 'statusCode': 200}
+
+EXECUTION_ALTERNATIVE_EINSTEIN_PUZZLE = {
+    "data": """
+    exists(A, list(A, _, _, _, _)).
+        exists(A, list(_, A, _, _, _)).
+        exists(A, list(_, _, A, _, _)).
+        exists(A, list(_, _, _, A, _)).
+        exists(A, list(_, _, _, _, A)).
+        rightOf(R, L, list(L, R, _, _, _)).
+        rightOf(R, L, list(_, L, R, _, _)).
+        rightOf(R, L, list(_, _, L, R, _)).
+        rightOf(R, L, list(_, _, _, L, R)).
+        middle(A, list(_, _, A, _, _)).
+        first(A, list(A, _, _, _, _)).
+        nextTo(A, B, list(B, A, _, _, _)).
+        nextTo(A, B, list(_, B, A, _, _)).
+        nextTo(A, B, list(_, _, B, A, _)).
+        nextTo(A, B, list(_, _, _, B, A)).
+        nextTo(A, B, list(A, B, _, _, _)).
+        nextTo(A, B, list(_, A, B, _, _)).
+        nextTo(A, B, list(_, _, A, B, _)).
+        nextTo(A, B, list(_, _, _, A, B)).
+        puzzle(Houses) :-
+              exists(house(red, british, _, _, _), Houses),
+              exists(house(_, swedish, _, _, dog), Houses),
+              exists(house(green, _, coffee, _, _), Houses),
+              exists(house(_, danish, tea, _, _), Houses),
+              rightOf(house(white, _, _, _, _), house(green, _, _, _, _), Houses),
+              exists(house(_, _, _, pall_mall, bird), Houses),
+              exists(house(yellow, _, _, dunhill, _), Houses),
+              middle(house(_, _, milk, _, _), Houses),
+              first(house(_, norwegian, _, _, _), Houses),
+              nextTo(house(_, _, _, blend, _), house(_, _, _, _, cat), Houses),
+              nextTo(house(_, _, _, dunhill, _),house(_, _, _, _, horse), Houses),
+              exists(house(_, _, beer, bluemaster, _), Houses),
+              exists(house(_, german, _, prince, _), Houses),
+              nextTo(house(_, norwegian, _, _, _), house(blue, _, _, _, _), Houses),
+              nextTo(house(_, _, _, blend, _), house(_, _, water_, _, _), Houses).
+        solution(FishOwner) :-
+          puzzle(Houses),
+          exists(house(_, FishOwner, _, _, fish), Houses).
+    """,
+    "query": ["solution(FishOwner)"]
+}
+EXPECTED_ALTERNATIVE_EINSTEIN_PUZZLE_JSON = {'data': {'solution': [{'FishOwner': 'german'}]}, 'statusCode': 200}

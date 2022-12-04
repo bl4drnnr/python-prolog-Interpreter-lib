@@ -1,14 +1,31 @@
 import requests
 import threading
 from ppil import ApiInstance
-from ppil.tests._test_variables import \
-    INSTANCE_URL,\
-    PROLOG_DATA,\
-    JSON_DATA, \
-    EXECUTION_PROLOG_DATA, \
-    EXPECTED_EXECUTION_PROLOG_RESPONSE, \
-    EXECUTION_JSON_DATA, \
-    EXPECTED_EXECUTION_JSON_RESPONSE
+from ppil.tests._test_variables import *
+
+
+TEST_DATASETS = [{
+    'data': EXECUTION_PROLOG_DATA,
+    'result': EXPECTED_EXECUTION_PROLOG_RESPONSE
+}, {
+    'data': EXECUTION_JSON_DATA,
+    'result': EXPECTED_EXECUTION_JSON_RESPONSE
+}, {
+    'data': EXECUTION_BAD_DOG,
+    'result': EXPECTED_EXECUTION_BAD_DOG_JSON
+}, {
+    'data': EXECUTION_RECURSION,
+    'result': EXPECTED_EXECUTION_RECURSION_JSON
+}, {
+    'data': EXECUTION_SIBLINGS,
+    'result': EXPECTED_EXECUTION_SIBLINGS_JSON
+}, {
+    'data': EXECUTION_EINSTEIN_PUZZLE,
+    'result': EXPECTED_EINSTEIN_PUZZLE_JSON
+}, {
+    'data': EXECUTION_ALTERNATIVE_EINSTEIN_PUZZLE,
+    'result': EXPECTED_ALTERNATIVE_EINSTEIN_PUZZLE_JSON
+}]
 
 
 def _run_instance():
@@ -24,20 +41,13 @@ def test_conversion():
     assert json_to_prolog.json() == PROLOG_DATA
 
 
-def test_execution_from_prolog():
-    response = requests.post(f"{INSTANCE_URL}/execute", json=EXECUTION_PROLOG_DATA)
-
-    assert response.json() == EXPECTED_EXECUTION_PROLOG_RESPONSE
-
-
-def test_execution_from_json():
-    response = requests.post(f"{INSTANCE_URL}/execute", json=EXECUTION_JSON_DATA)
-
-    assert response.json() == EXPECTED_EXECUTION_JSON_RESPONSE
+def test_execution_function():
+    for test_item in TEST_DATASETS:
+        response = requests.post(f"{INSTANCE_URL}/execute", json=test_item['data'])
+        assert response.json() == test_item['result']
 
 
 _run_instance()
 
 test_conversion()
-test_execution_from_prolog()
-test_execution_from_json()
+test_execution_function()
