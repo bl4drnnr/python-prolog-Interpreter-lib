@@ -1,7 +1,7 @@
 INSTANCE_URL = 'http://127.0.0.1:5000'
 
 PROLOG_DATA = {
-    "data": "predicate_name(arg1,'str_arg',[list,[X]]):-5+2 > 1+3,inner_predicate([V,100],arg1).\n",
+    "data": "predicate_name(arg1,'str_arg',[list,[X]]):-5+2 > 1+3,inner_predicate([V,100],arg1), (5+2 >= 2*2 -> else_clause(); [[TestVar], then_clause]).\n",
     "statusCode": 200
 }
 JSON_DATA = {
@@ -71,9 +71,48 @@ JSON_DATA = {
                     ],
                     "name": "inner_predicate",
                     "type": "predicate"
+                },
+                {
+                    "else_clause": [
+                        {
+                            "arguments": [],
+                            "name": "else_clause",
+                            "type": "predicate"
+                        }
+                    ],
+                    "if_condition": {
+                        "left_side": "5+2",
+                        "right_side": "2*2",
+                        "separator": ">=",
+                        "type": "condition"
+                    },
+                    "then_clause": [
+                        {
+                            "items": [
+                                {
+                                    "items": [
+                                        {
+                                            "data_type": "variable",
+                                            "type": "atom",
+                                            "value": "TestVar"
+                                        }
+                                    ],
+                                    "type": "list"
+                                },
+                                {
+                                    "data_type": "atom",
+                                    "type": "atom",
+                                    "value": "then_clause"
+                                }
+                            ],
+                            "type": "list"
+                        }
+                    ],
+                    "type": "condition_statement"
                 }
             ],
             "joins": [
+                ",",
                 ","
             ],
             "name": "predicate_name",
