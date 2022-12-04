@@ -76,8 +76,6 @@ class Executor:
         for query in code_query:
             query_arguments = query[query.index('(') + 1:-1].split(',')
             query_name = query[:query.index('(')]
-            if len(query_arguments) == 0:
-                pass
 
             source_script_file = open(prolog_source_path, 'w+')
 
