@@ -1,3 +1,4 @@
+import re
 import os
 import subprocess
 from inspect import getsourcefile
@@ -5,6 +6,8 @@ from os.path import abspath
 
 from ppil.ppil._api_response_handler import ExecutionError
 from ppil.ppil._variables import EXECUTION_RESULT_SPLITER
+
+VARIABLE_REGEX = r"^[A-Z_][A-Za-z0-9_]*$"
 
 
 def _get_fact_head_and_conditions(fact):
@@ -14,8 +17,15 @@ def _get_fact_head_and_conditions(fact):
 
 def _wrap_facts(prolog_program, query):
     prolog_program = prolog_program.split('.')
+
     updated_prolog_program = []
+
     query_head = query.split('(')[0]
+    query_arguments = (query[query.index('(')+1:-1]).replace(' ', '').split(',')
+    query_arguments_variables = [
+        item for item in query_arguments
+        if not re.match(VARIABLE_REGEX, item) is None
+    ]
 
     for item in prolog_program:
         if ':-' in item:
@@ -23,14 +33,21 @@ def _wrap_facts(prolog_program, query):
             fact_name = head_part.split('(')[0]
 
             if query_head == fact_name:
+                fact_arguments_vars = ""
                 fact_arguments = head_part[head_part.index('(')+1:-1]
-                result_output_pattern = ' '.join([f"~q" for index, item in enumerate(fact_arguments.split(','))]) if len(fact_arguments) > 0 else ''
+
+                for index, query_variable in enumerate(query_arguments):
+                    if re.match(VARIABLE_REGEX, query_variable) is not None:
+                        fact_arguments_vars += fact_arguments.strip().split(',')[index]
+                        fact_arguments_vars += ','
+
+                result_output_pattern = ' '.join([f"~q" for item in query_arguments_variables]) if len(fact_arguments) > 0 else ''
                 result_output_pattern += EXECUTION_RESULT_SPLITER
 
-                if fact_name not in condition_part:
-                    replace_condition_part = f'forall(({condition_part}), format("{result_output_pattern}", [{fact_arguments}]))'
-                else:
-                    replace_condition_part = f'({condition_part}), format("{result_output_pattern}", [{fact_arguments}])'
+                replace_condition_part = \
+                    f'forall(({condition_part}), format("{result_output_pattern}", [{fact_arguments_vars[:-1]}]))' \
+                    if fact_name not in condition_part \
+                    else f'({condition_part}), format("{result_output_pattern}", [{fact_arguments_vars[:-1]}])'
 
                 updated_prolog_program.append(item.replace(condition_part, replace_condition_part))
             else:
@@ -64,7 +81,7 @@ class Executor:
         if not isinstance(source_code, str):
             json_data = self._json_format_checker.check_json_format(code)
             source_code = self._json_parser.parse_json(json_data)
-            source_code = source_code.replace('\n', '').strip()
+            source_code = source_code.replace('\n', '')
 
         code_query = code.get('query')
 
@@ -74,7 +91,10 @@ class Executor:
             results[query_name] = []
 
         for query in code_query:
-            query_arguments = query[query.index('(') + 1:-1].split(',')
+            query_arguments = [
+                item for item in (query[query.index('(') + 1:-1]).replace(' ', '').split(',')
+                if not re.match(VARIABLE_REGEX, item) is None
+            ]
             query_name = query[:query.index('(')]
 
             source_script_file = open(prolog_source_path, 'w+')
@@ -93,7 +113,8 @@ class Executor:
             for result in serialized_result:
                 res = {}
                 for query_index, query_argument in enumerate(query_arguments):
-                    res[query_argument.strip()] = result.split(' ')[query_index]
+                    res[query_argument.strip()] = result.split(' ')[query_index] if ' ' in result else result
+
                 res = list(res.values())[0] if list(res.keys())[0] == '' else res
                 results[query_name].append(res)
 

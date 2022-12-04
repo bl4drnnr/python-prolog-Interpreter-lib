@@ -2,10 +2,7 @@ from ppil.ppil.elements import PList, Atom, Predicate, Condition, ConditionState
 
 
 def _check_item_type(item):
-    if isinstance(item, list):
-        return [_check_item_type(i) for i in item]
-
-    elif isinstance(item, Atom):
+    if isinstance(item, Atom):
         if item.data_type == 'string':
             return f"'{item.atom}',"
         elif item.data_type in ['number', 'variable', 'atom']:
@@ -29,7 +26,7 @@ def _check_item_type(item):
         return f"{item.name}({serialized_text})"
 
     elif isinstance(item, Condition):
-        return f"{item.left_side}{item.separator}{item.right_side}"
+        return f"{item.left_side} {item.separator} {item.right_side}"
 
     elif isinstance(item, ConditionStatement):
         if_condition = _check_item_type(item.if_condition)
@@ -106,7 +103,7 @@ class JsonParser:
                     serialized_arguments = _serialize_arguments(_parse_predicate_arguments(condition.arguments))
                     self._output_program += f"{condition.name}({serialized_arguments}){join}"
                 elif isinstance(condition, Condition):
-                    self._output_program += f"{condition.left_side}{condition.separator}{condition.right_side}{join}"
+                    self._output_program += f"{condition.left_side} {condition.separator} {condition.right_side}{join}"
                 elif isinstance(condition, ConditionStatement):
                     self._output_program += f"({_check_item_type(condition)}){join}"
 

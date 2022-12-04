@@ -61,10 +61,6 @@ def _parse_condition(condition):
     }
 
 
-def _parse_p_list(p_list):
-    return [_check_item_type(list_item) for list_item in p_list.items]
-
-
 def _parse_condition_statement(condition_statement):
     return {
         "type": "condition_statement",
@@ -98,8 +94,6 @@ class PrologParser:
                         conditions.append(_parse_condition(condition))
                     elif isinstance(condition, ConditionStatement):
                         conditions.append(_parse_condition_statement(condition))
-                    elif isinstance(condition, PList):
-                        conditions.append(_parse_p_list(condition))
 
                 self._output_json.append({
                     "type": item.type,
