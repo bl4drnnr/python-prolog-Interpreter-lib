@@ -821,10 +821,10 @@ EXECUTION_BAD_DOG = {
 EXPECTED_EXECUTION_BAD_DOG_JSON = {'data': {'bad_dog': [{'X': 'fido'}]}, 'statusCode': 200}
 
 EXECUTION_RECURSION = {
-    "data": "offspring(abraham, ishmael).offspring(abraham, isaac).offspring(isaac, esau).offspring(isaac, jacob).descendant(X, Y):- offspring(X, Y).descendant(X, Z):- offspring(X, Y), descendant(Y, Z).",
-    "query": ["descendant(abraham, X)"]
+    "data": "oblicz(1, 0):- !.oblicz(X, Y):- Y>0, Y1 is Y - 1, oblicz(X1, Y1), X is X1 + Y.",
+    "query": ["oblicz(X, 7)"]
 }
-EXPECTED_EXECUTION_RECURSION_JSON = {'data': {'descendant': [{'X': 'ishmael', 'abraham': 'abraham'}, {'X': 'isaac', 'abraham': 'abraham'}]}, 'statusCode': 200}
+EXPECTED_EXECUTION_RECURSION_JSON = {"data": {"oblicz": [{"X": "1"}, {"X": "2"}, {"X": "4"}, {"X": "7"}, {"X": "11"}, {"X": "16"}, {"X": "22"}, {"X": "29"}]}, "statusCode": 200}
 
 EXECUTION_SIBLINGS = {
     "data": "father_child(massimo, ridge).father_child(eric, thorne).father_child(thorne, alexandria).mother_child(stephanie, chloe).mother_child(stephanie, kristen).mother_child(stephanie, felicia).parent_child(X, Y) :- father_child(X, Y).parent_child(X, Y) :- mother_child(X, Y).sibling(X, Y) :- parent_child(Z, X), parent_child(Z, Y).",
