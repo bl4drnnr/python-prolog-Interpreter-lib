@@ -3,7 +3,7 @@ from ppil import ApiInstance
 
 def main():
     api = ApiInstance()
-    api.run()
+    api.run(debug=True)
 
 
 if __name__ == '__main__':
