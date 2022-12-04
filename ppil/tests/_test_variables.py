@@ -828,9 +828,9 @@ EXPECTED_EXECUTION_RECURSION_JSON = {'data': {'descendant': [{'X': 'ishmael', 'a
 
 EXECUTION_SIBLINGS = {
     "data": "father_child(massimo, ridge).father_child(eric, thorne).father_child(thorne, alexandria).mother_child(stephanie, chloe).mother_child(stephanie, kristen).mother_child(stephanie, felicia).parent_child(X, Y) :- father_child(X, Y).parent_child(X, Y) :- mother_child(X, Y).sibling(X, Y) :- parent_child(Z, X), parent_child(Z, Y).",
-    "query": ["sibling(X, felicia)"]
+    "query": ["sibling(H, felicia)"]
 }
-EXPECTED_EXECUTION_SIBLINGS_JSON = {}
+EXPECTED_EXECUTION_SIBLINGS_JSON = {"data": {"sibling": [{"H": "chloe"}, {"H": "kristen"}, {"H": "felicia"}]}, "statusCode": 200}
 
 EXECUTION_EINSTEIN_PUZZLE = {
     "data": """
