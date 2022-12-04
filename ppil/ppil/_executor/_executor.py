@@ -64,7 +64,7 @@ class Executor:
         if not isinstance(source_code, str):
             json_data = self._json_format_checker.check_json_format(code)
             source_code = self._json_parser.parse_json(json_data)
-            source_code = source_code.replace('\n', '').strip()
+            source_code = source_code.replace('\n', '')
 
         code_query = code.get('query')
 
